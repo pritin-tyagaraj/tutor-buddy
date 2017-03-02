@@ -1,0 +1,5 @@
+/node_modules
+/npm-debug.log
+/app.yaml
+/config.js
+/api/auth/config.js
