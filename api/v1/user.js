@@ -10,9 +10,6 @@ function getModel() {
 
 /**
  * Query Facbeook to get the user's email ID, and create a new user in our database.
- * @param  {String}   facebook_id  The facebook ID
- * @param  {String}   access_token The facebook access token
- * @param  {Function} cb           Callback function to indicate that a new user has been created in the database
  */
 function createNewFacebookUser(facebook_id, access_token, cb) {
     var sUrl = util.format('https://graph.facebook.com/v2.8/%s?access_token=%s&fields=first_name,last_name,email', facebook_id, access_token);
@@ -35,21 +32,23 @@ function createNewFacebookUser(facebook_id, access_token, cb) {
 }
 
 module.exports = {
+    /**
+     * Returns details of the currently logged in user
+     */
     getCurrentUser: function(req, res, next) {
         res.end("<Your user details>");
     },
 
-    getUserByFacebookID: function(user_id, cb) {
-
-    },
-
+    /**
+     * Log the user in (if the facebook ID provided has already been registered) or register the user (if it's a new user). In either case, a new session is created and the user is redirected to the landing page of the protected area.
+     */
     loginOrCreateUser: function(facebook_id, access_token, res, next) {
         if (!facebook_id) {
             winston.error('Trying to loginOrCreate a user without an FB ID!');
         }
 
         winston.log('Check if FB ID %s is returning or is new user', facebook_id);
-        getModel().user.readByFacebookId(facebook_id, (err, user, cursor) => {
+        getModel().user.readByFacebookId(facebook_id, (err, user) => {
             if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!
                 createNewFacebookUser(facebook_id, access_token, function(err, dbUserId) {
@@ -85,9 +84,5 @@ module.exports = {
                 });
             }
         });
-    },
-
-    logoutUser: function(userId, res, cb) {
-        require('../auth/session').terminateUserSession(userId, res, cb);
     }
 };

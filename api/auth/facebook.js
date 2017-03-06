@@ -6,18 +6,28 @@ const winston = require('winston');
 const authConfig = require('./config.js');
 
 module.exports = {
+    /**
+     * Initialize restify routes required for Facebook authentication (login, logout etc.)
+     * @param  {restify.Server} server The restify server instance
+     */
     initServerRoutes: function(server) {
         server.get('/auth/facebook/login', this.triggerUserLogin);
-        server.get('/auth/facebook/logout', this.triggerUserLogout);
+        server.get('/auth/facebook/logout', require('./session').terminateUserSession);
         server.get('/auth/facebook/redirect', this.handleLoginCodeResponse);
     },
 
+    /**
+     * Route handler for triggering a facebook login/registration
+     */
     triggerUserLogin: function(req, res, next) {
         var loginUrl = util.format(authConfig.FACEBOOK_LOGIN_URL, authConfig.FACEBOOK_APP_ID, authConfig.FACEBOOK_REDIRECT_URL, authConfig.FACEBOOK_PERMISSIONS);
         winston.info('Redirecting to facebook login URL...');
         res.redirect(loginUrl, next);
     },
 
+    /**
+     * Route handler for handling the facebook response to the login request. The request either includes a code (which needs to be exchanged for a token) or an error (if the user denied access)
+     */
     handleLoginCodeResponse: function(req, res, next) {
         // We logged in and got a code.
         var params = url.parse(req.url, true).query;
@@ -59,25 +69,6 @@ module.exports = {
                     });
                 });
             })
-        });
-    },
-
-    triggerUserLogout: function(req, res, next) {
-        // Basic checks
-        if (!req.user) {
-            winston.error('Trying to log out a user, but who\'s logged in!?');
-        }
-
-        // Clear the server session
-        winston.info('Triggering logout for user %s', req.user.id);
-        require('../v1/user').logoutUser(req.user.id, res, function(err) {
-            if (err) {
-                winston.error(err);
-                throw err;
-            }
-
-            winston.info('Logged out user %s', req.user.id);
-            res.redirect('/', next);
         });
     }
 };;;

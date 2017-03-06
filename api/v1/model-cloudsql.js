@@ -4,6 +4,9 @@ const extend = require('lodash').assign;
 const mysql = require('mysql');
 const config = require('../../config');
 
+/**
+ * Helper method to return a DB connection
+ */
 function getConnection() {
     const options = {
         user: config.get('MYSQL_USER'),
@@ -18,44 +21,9 @@ function getConnection() {
     return mysql.createConnection(options);
 }
 
-// [START list]
-// function list(limit, token, cb) {
-//     token = token ? parseInt(token, 10) : 0;
-//     const connection = getConnection();
-//     connection.query(
-//         'SELECT * FROM `tutors` LIMIT ? OFFSET ?', [limit, token],
-//         (err, results) => {
-//             if (err) {
-//                 cb(err);
-//                 return;
-//             }
-//             const hasMore = results.length === limit ? token + results.length : false;
-//             cb(null, results, hasMore);
-//         }
-//     );
-//     connection.end();
-// }
-//
-// function read(id, cb) {
-//     const connection = getConnection();
-//     connection.query(
-//         'SELECT * FROM `tutors` WHERE `id` = ?', id, (err, results) => {
-//             if (err) {
-//                 cb(err);
-//                 return;
-//             }
-//             if (!results.length) {
-//                 cb({
-//                     code: 404,
-//                     message: 'Not found'
-//                 });
-//                 return;
-//             }
-//             cb(null, results[0]);
-//         });
-//     connection.end();
-// }
-
+/**
+ * Queries the user DB and returns the user (if found) with a matching Facebook ID or returns a 404 error (if not found)
+ */
 function readByFacebookId(id, cb) {
     const connection = getConnection();
     connection.query(
@@ -76,6 +44,9 @@ function readByFacebookId(id, cb) {
     connection.end();
 }
 
+/**
+ * Creates a new session in the DB for a given user
+ */
 function createNewSession(userId, sessionId, cb) {
     const connection = getConnection();
     connection.query(
@@ -89,6 +60,9 @@ function createNewSession(userId, sessionId, cb) {
     connection.end();
 }
 
+/**
+ * Deletes a given user's session ID from the database
+ */
 function terminateSession(userId, cb) {
     const connection = getConnection();
     connection.query('UPDATE `users` SET `session_id` = NULL WHERE `id` = ?', [userId], (err) => {
@@ -101,6 +75,9 @@ function terminateSession(userId, cb) {
     });
 }
 
+/**
+ * Creates a new user with the provided info
+ */
 function createNewUser(firstName, lastName, email, facebookId, facebookAccessToken, cb) {
     const connection = getConnection();
     connection.query('INSERT INTO `users` (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?);', [firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
@@ -113,8 +90,6 @@ function createNewUser(firstName, lastName, email, facebookId, facebookAccessTok
     });
 }
 
-// [END list]
-//
 module.exports = {
     user: {
         readByFacebookId: readByFacebookId,
