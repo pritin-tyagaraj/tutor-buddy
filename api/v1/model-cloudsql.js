@@ -66,10 +66,9 @@ function terminateSession(userId, cb) {
     const connection = getConnection();
     connection.query('UPDATE `users` SET `session_id` = NULL WHERE `id` = ?', [userId], (err) => {
         if (err) {
-            cb(err);
-            throw err;
-        }
+            return cb(err);
 
+        }
         cb(null);
     });
 }
@@ -81,10 +80,8 @@ function createNewUser(firstName, lastName, email, facebookId, facebookAccessTok
     const connection = getConnection();
     connection.query('INSERT INTO `users` (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?);', [firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
         if (err) {
-            cb(err);
-            throw err;
+            return cb(err);
         }
-
         cb(null, results.insertId);
     });
 }
