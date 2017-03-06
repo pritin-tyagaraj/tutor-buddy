@@ -47,6 +47,7 @@
     },
     "devDependencies": {
         "cross-env": "^3.2.3",
+        "istanbul": "^0.4.5",
         "mocha": "^3.2.0",
         "nodejs-repo-tools": "git+https://git@github.com/GoogleCloudPlatform/nodejs-repo-tools.git",
         "proxyquire": "^1.7.10",
