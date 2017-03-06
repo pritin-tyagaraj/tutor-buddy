@@ -1,4 +1,4 @@
-# tutor-buddy [![Build Status](https://travis-ci.org/pritin-tyagaraj/tutor-buddy.svg?branch=master)](https://travis-ci.org/pritin-tyagaraj/tutor-buddy)
+# tutor-buddy [![Build Status](https://travis-ci.org/pritin-tyagaraj/tutor-buddy.svg?branch=master)](https://travis-ci.org/pritin-tyagaraj/tutor-buddy) [![Code Climate](https://lima.codeclimate.com/github/pritin-tyagaraj/tutor-buddy/badges/gpa.svg)](https://lima.codeclimate.com/github/pritin-tyagaraj/tutor-buddy)
 
 ![Tutor Budy Logo](tutor-buddy.png?raw=true "Tutor Buddy")
 
