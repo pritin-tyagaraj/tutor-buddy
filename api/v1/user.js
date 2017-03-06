@@ -1,11 +1,10 @@
 'use strict';
-const config = require('../../config');
 const https = require('https');
 const util = require('util');
 const winston = require('winston');
 
 function getModel() {
-    return require(`./model-${config.get('DATA_BACKEND')}`);
+    return require(`./model-cloudsql`);
 }
 
 /**

@@ -2,20 +2,20 @@
 
 const extend = require('lodash').assign;
 const mysql = require('mysql');
-const config = require('../../config');
 
 /**
  * Helper method to return a DB connection
  */
 function getConnection() {
     const options = {
-        user: config.get('MYSQL_USER'),
-        password: config.get('MYSQL_PASSWORD'),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
         database: 'tutor-buddy'
     };
 
-    if (config.get('INSTANCE_CONNECTION_NAME') && config.get('NODE_ENV') === 'production') { //&& config.get('NODE_ENV') === 'production') {
-        options.socketPath = `/cloudsql/${config.get('INSTANCE_CONNECTION_NAME')}`;
+    if (process.env.DB_INSTANCE && process.env.
+        'NODE_ENV' === 'production') {
+        options.socketPath = `/cloudsql/${process.env.DB_INSTANCE}`;
     }
 
     return mysql.createConnection(options);

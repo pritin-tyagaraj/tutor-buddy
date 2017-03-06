@@ -1,10 +1,9 @@
 const jwt = require('jsonwebtoken');
-const config = require('../../config');
 const winston = require('winston');
 const jwtSecret = 'fc143f1edcc846edbc6c7e2302be5602';
 
 function getModel() {
-    return require(`../v1/model-${config.get('DATA_BACKEND')}`);
+    return require(`../v1/model-cloudsql`);
 }
 
 function createNewJWTToken(userId) {
