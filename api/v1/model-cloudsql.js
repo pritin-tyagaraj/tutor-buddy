@@ -79,7 +79,7 @@ function readByFacebookId(id, cb) {
 function createNewSession(userId, sessionId, cb) {
     const connection = getConnection();
     connection.query(
-        'UPDATE `users` SET `session_id` = ? WHERE `user_id` = ?', [sessionId, userId], (err, results) => {
+        'UPDATE `users` SET `session_id` = ? WHERE `id` = ?', [sessionId, userId], (err, results) => {
             if (err) {
                 cb(err);
                 return;
@@ -89,14 +89,27 @@ function createNewSession(userId, sessionId, cb) {
     connection.end();
 }
 
-function createNewUser(firstName, lastName, email, facebookId, facebookAccessToken, cb) {
+function terminateSession(userId, cb) {
     const connection = getConnection();
-    connection.query("INSERT INTO `users` (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?);", [firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
+    connection.query('UPDATE `users` SET `session_id` = NULL WHERE `id` = ?', [userId], (err) => {
         if (err) {
+            cb(err);
             throw err;
         }
 
-        cb(results.insertId);
+        cb(null);
+    });
+}
+
+function createNewUser(firstName, lastName, email, facebookId, facebookAccessToken, cb) {
+    const connection = getConnection();
+    connection.query('INSERT INTO `users` (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?);', [firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
+        if (err) {
+            cb(err);
+            throw err;
+        }
+
+        cb(null, results.insertId);
     });
 }
 
@@ -107,5 +120,6 @@ module.exports = {
         readByFacebookId: readByFacebookId,
         createNewSession: createNewSession,
         createNewUser: createNewUser,
+        terminateSession: terminateSession
     }
 };

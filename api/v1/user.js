@@ -2,6 +2,7 @@
 const config = require('../../config');
 const https = require('https');
 const util = require('util');
+const winston = require('winston');
 
 function getModel() {
     return require(`./model-${config.get('DATA_BACKEND')}`);
@@ -43,22 +44,50 @@ module.exports = {
     },
 
     loginOrCreateUser: function(facebook_id, access_token, res, next) {
+        if (!facebook_id) {
+            winston.error('Trying to loginOrCreate a user without an FB ID!');
+        }
+
+        winston.log('Check if FB ID %s is returning or is new user', facebook_id);
         getModel().user.readByFacebookId(facebook_id, (err, user, cursor) => {
-            if (err.code === 404) {
+            if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!
-                createNewFacebookUser(facebook_id, access_token, function(dbUserId) {
+                createNewFacebookUser(facebook_id, access_token, function(err, dbUserId) {
+                    winston.debug('Created new account for FB user', {
+                        facebook_id: facebook_id,
+                        access_token: access_token
+                    });
+
                     //Create a new session for this newly created user
-                    require('../auth/session').createNewServerSessionForUser(dbUserId, (sessionId) => {
+                    require('../auth/session').createNewServerSessionForUser(dbUserId, (err, sessionId) => {
+                        winston.debug('Created new server session for DB user', {
+                            dbUserId: dbUserId,
+                            sessionId: sessionId
+                        });
+
                         // A new user and session have been created. Put the session ID in the user's browser
-                        require('../auth/session').createNewClientSession(dbUserId, sessionId, res);
+                        require('../auth/session').createNewClientSession(dbUserId, sessionId, res, next);
                     });
                 });
             } else {
+                winston.debug('Facebook user ID already exists.', {
+                    facebook_id: facebook_id
+                });
+
                 // User exists already. Create a new session
-                require('../auth/session').createNewServerSessionForUser(user.id, function(sessionId) {
-                    require('../auth/session').createNewClientSession(user.id, sessionId, res);
+                require('../auth/session').createNewServerSessionForUser(user.id, function(err, sessionId) {
+                    winston.debug('New server session created for existing FB user.', {
+                        facebook_id: facebook_id,
+                        sessionId: sessionId
+                    });
+
+                    require('../auth/session').createNewClientSession(user.id, sessionId, res, next);
                 });
             }
         });
+    },
+
+    logoutUser: function(userId, res, cb) {
+        require('../auth/session').terminateUserSession(userId, res, cb);
     }
 };

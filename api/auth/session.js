@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
+const winston = require('winston');
 const jwtSecret = 'fc143f1edcc846edbc6c7e2302be5602';
 
 function getModel() {
@@ -15,24 +16,47 @@ module.exports = {
      * @param  {[type]} res       [description]
      * @return {[type]}           [description]
      */
-    createNewClientSession: function(userId, sessionId, res) {
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.end(
-            `
-            <html>
-                <script>
-                    localStorage.setItem('tutor-buddy-session', '${sessionId}');
-                    // Redirect here...
-                </script>
-            </html>
-        `
-        );
+    createNewClientSession: function(userId, sessionId, res, next) {
+        res.setCookie('tutor-buddy-session', sessionId, {
+            path: '/',
+            httpOnly: true
+        });
+        winston.info('Created response cookie with session ID for user.', {
+            userId: userId,
+            sessionId: sessionId
+        });
+
+        res.redirect('/dashboard', next);
     },
 
     createNewServerSessionForUser: function(userId, cb) {
-        var sessionId = this.createNewJWTToken();
-        getModel().user.createNewSession(userId, sessionId, () => {
-            cb(sessionId);
+        var sessionId = this.createNewJWTToken(userId);
+        getModel().user.createNewSession(userId, sessionId, (err) => {
+            if (err) {
+                winston.error(err);
+                cb(err);
+                return;
+            }
+            cb(null, sessionId);
+        });
+    },
+
+    terminateUserSession: function(userId, res, cb) {
+        winston.info('Clearing server session for user %s', userId);
+        getModel().user.terminateSession(userId, (err) => {
+            if (err) {
+                winston.error(err);
+                cb(err);
+                return;
+            }
+
+            // Server session was deleted. Now delete the client's cookie.
+            winston.info('Clearing session cookie for user %s', userId);
+            res.clearCookie('tutor-buddy-session', {
+                path: '/',
+                httpOnly: true
+            });
+            cb(null);
         });
     },
 
@@ -41,5 +65,16 @@ module.exports = {
             user: userId,
             expiresIn: '30d'
         }, jwtSecret);
-    }
+    },
+
+    parseJWTToken: function(sToken) {
+        try {
+            var decoded = jwt.verify(sToken, jwtSecret);
+        } catch (err) {
+            winston.error('Error parsing JWT: %s | %s', err.name, err.message);
+            throw err;
+        }
+
+        return decoded;
+    },
 };
