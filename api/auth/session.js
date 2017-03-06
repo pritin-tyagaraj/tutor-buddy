@@ -12,7 +12,7 @@ function createNewJWTToken(userId) {
         user: userId,
         expiresIn: '30d'
     }, jwtSecret);
-},
+}
 
 module.exports = {
     /**

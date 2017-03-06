@@ -38,7 +38,7 @@ winston.addColors({
 });
 winston.remove(winston.transports.Console);
 winston.add(winston.transports.Console, {
-    level: 'debug',
+    level: process.env.mode === 'TEST' ? 'none' : 'info',
     prettyPrint: true,
     colorize: true,
     silent: false,
@@ -46,7 +46,7 @@ winston.add(winston.transports.Console, {
 });
 
 // Wire in the auth middleware
-server.use([require('./api/middleware/validateRequest').checkUserAuthentication, require('./api/middleware/validateRequest').checkUserAuthorization]);
+server.use(require('./api/middleware/validateRequest').checkUserAuthentication);
 winston.info('Wiring request validation middleware... Done.');
 
 // Setup auth related routes

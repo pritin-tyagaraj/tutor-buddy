@@ -2,6 +2,7 @@
 const authWhitelist = require('../auth/whitelist.js');
 const winston = require('winston');
 const url = require('url');
+const errors = require('restify-errors');
 
 module.exports = {
     checkUserAuthentication: function(req, res, next) {
@@ -34,10 +35,10 @@ module.exports = {
                 res.redirect('/auth/facebook/login', next);
             } else {
                 // If a malformed JWT is provided, perhaps it was tampered? End with a HTTP 401
-                res.send(401, 'Could not validate provided session ID');
                 winston.error('Terminating response, malformed JWT was provided');
+                res.send(401, "Could not validate provided session ID");
             }
-            return;
+            return next();
         }
 
         //Token is valid
@@ -45,7 +46,7 @@ module.exports = {
         req.user = {
             id: decodedToken.user
         };
-        next();
+        return next();
     },
 
     checkUserAuthorization: function(req, res, next) {
