@@ -1,0 +1,16 @@
+runtime: nodejs
+env: flex
+
+# Temporary setting to keep gcloud from uploading node_modules
+skip_files:
+ - ^node_modules$
+
+env_variables:
+  NODE_ENV: <environment>
+  MYSQL_USER: <user>
+  MYSQL_PASSWORD: <pass>
+  MYSQL_DATABASE: <db name>
+  INSTANCE_CONNECTION_NAME: <connection name>
+
+beta_settings:
+  cloud_sql_instances: <connection name>

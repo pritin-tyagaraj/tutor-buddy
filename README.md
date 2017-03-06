@@ -1,2 +1,2 @@
 # tutor-buddy-api
-Node.js API for the Tutor Buddy app
+Node.js application for the Tutor Buddy app
