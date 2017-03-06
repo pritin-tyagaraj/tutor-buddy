@@ -46,6 +46,7 @@
         "restify-errors": "^4.3.0"
     },
     "devDependencies": {
+        "codecov": "^1.0.1",
         "cross-env": "^3.2.3",
         "istanbul": "^0.4.5",
         "mocha": "^3.2.0",
