@@ -4,6 +4,8 @@ const url = require('url');
 const https = require('https');
 const winston = require('winston');
 const authConfig = require('./config.js');
+const session = require('./session');
+const user = require('../v1/user');
 
 module.exports = {
     /**
@@ -12,7 +14,7 @@ module.exports = {
      */
     initServerRoutes: function(server) {
         server.get('/auth/facebook/login', this.triggerUserLogin);
-        server.get('/auth/facebook/logout', require('./session').terminateUserSession);
+        server.get('/auth/facebook/logout', session.terminateUserSession);
         server.get('/auth/facebook/redirect', this.handleLoginCodeResponse);
     },
 
@@ -60,15 +62,21 @@ module.exports = {
                         body += chunk;
                     });
                     httpRes.on('end', () => {
-                        // We've verified that we have a good access_token. TODO: What if it isn't good? Handle that too.
+                        // We've verified that we have a good access_token.
                         var userId = JSON.parse(body).data.user_id;
+
+                        // Did the acess token validation fail?
+                        if (!userId) {
+                            winston.error('Access token %s could not be verified with facebook.', accessToken);
+                            return next();
+                        }
                         winston.info('Access token is OK. Facebook User: %s', userId);
 
                         // Handle login (or) register
-                        require('../v1/user').loginOrCreateUser(userId, accessToken, res, next);
+                        user.loginOrCreateUser(userId, accessToken, res, next);
                     });
                 });
             })
         });
     }
-};;;
+};

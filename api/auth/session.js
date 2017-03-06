@@ -1,10 +1,7 @@
 const jwt = require('jsonwebtoken');
 const winston = require('winston');
 const jwtSecret = 'fc143f1edcc846edbc6c7e2302be5602';
-
-function getModel() {
-    return require(`../v1/model-cloudsql`);
-}
+const model = require(`../v1/model-cloudsql`);
 
 function createNewJWTToken(userId) {
     return jwt.sign({
@@ -35,7 +32,7 @@ module.exports = {
      */
     createNewServerSessionForUser: function(userId, cb) {
         var sessionId = createNewJWTToken(userId);
-        getModel().user.createNewSession(userId, sessionId, (err) => {
+        model.user.createNewSession(userId, sessionId, (err) => {
             if (err) {
                 winston.error(err);
                 cb(err);
@@ -56,7 +53,7 @@ module.exports = {
 
         // Clear the server session
         winston.info('Triggering logout for user %s', req.user.id);
-        getModel().user.terminateSession(req.user.id, (err) => {
+        model.user.terminateSession(req.user.id, (err) => {
             if (err) {
                 winston.error(err);
                 throw err;
@@ -85,5 +82,5 @@ module.exports = {
         }
 
         return decoded;
-    },
+    }
 };

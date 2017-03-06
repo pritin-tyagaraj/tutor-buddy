@@ -3,6 +3,7 @@ const authWhitelist = require('../auth/whitelist.js');
 const winston = require('winston');
 const url = require('url');
 const errors = require('restify-errors');
+const session = require('../auth/session');
 
 module.exports = {
     checkUserAuthentication: function(req, res, next) {
@@ -27,7 +28,7 @@ module.exports = {
         var sToken = req.cookies['tutor-buddy-session'];
         var decodedToken;
         try {
-            decodedToken = require('../auth/session').parseJWTToken(sToken);
+            decodedToken = session.parseJWTToken(sToken);
         } catch (err) {
             // If the token has expired, trigger a login again.
             if (err.name === 'TokenExpiredError') {

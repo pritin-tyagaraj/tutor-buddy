@@ -2,10 +2,8 @@
 const https = require('https');
 const util = require('util');
 const winston = require('winston');
-
-function getModel() {
-    return require(`./model-cloudsql`);
-}
+const model = require(`./model-cloudsql`);
+const session = require('../auth/session');
 
 /**
  * Query Facbeook to get the user's email ID, and create a new user in our database.
@@ -25,7 +23,7 @@ function createNewFacebookUser(facebook_id, access_token, cb) {
             var email = httpResponse.email;
 
             // Write to DB and call cb!
-            getModel().user.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
+            model.user.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
         });
     });
 }
@@ -47,24 +45,38 @@ module.exports = {
         }
 
         winston.log('Check if FB ID %s is returning or is new user', facebook_id);
-        getModel().user.readByFacebookId(facebook_id, (err, user) => {
+        model.user.readByFacebookId(facebook_id, (err, user) => {
             if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!
                 createNewFacebookUser(facebook_id, access_token, function(err, dbUserId) {
+                    if (err) {
+                        winston.error('An error occurred while creating a new Facebook user in the users table', {
+                            error: err
+                        });
+                        return next(err);
+                    }
+
                     winston.debug('Created new account for FB user', {
                         facebook_id: facebook_id,
                         access_token: access_token
                     });
 
                     //Create a new session for this newly created user
-                    require('../auth/session').createNewServerSessionForUser(dbUserId, (err, sessionId) => {
+                    session.createNewServerSessionForUser(dbUserId, (err, sessionId) => {
+                        if (err) {
+                            winston.error('An error occurred while creating a new session for user ' + dbUserId, {
+                                error: err
+                            });
+                            return next(err);
+                        }
+
                         winston.debug('Created new server session for DB user', {
                             dbUserId: dbUserId,
                             sessionId: sessionId
                         });
 
                         // A new user and session have been created. Put the session ID in the user's browser
-                        require('../auth/session').createNewClientSession(dbUserId, sessionId, res, next);
+                        session.createNewClientSession(dbUserId, sessionId, res, next);
                     });
                 });
             } else {
@@ -73,13 +85,19 @@ module.exports = {
                 });
 
                 // User exists already. Create a new session
-                require('../auth/session').createNewServerSessionForUser(user.id, function(err, sessionId) {
+                session.createNewServerSessionForUser(user.id, function(err, sessionId) {
+                    if (err) {
+                        winston.error('An error occurred while creating a new session for an existing user ' + user.id, {
+                            error: err
+                        });
+                    }
+
                     winston.debug('New server session created for existing FB user.', {
                         facebook_id: facebook_id,
                         sessionId: sessionId
                     });
 
-                    require('../auth/session').createNewClientSession(user.id, sessionId, res, next);
+                    session.createNewClientSession(user.id, sessionId, res, next);
                 });
             }
         });

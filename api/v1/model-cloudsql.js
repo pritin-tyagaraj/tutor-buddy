@@ -13,8 +13,7 @@ function getConnection() {
         database: 'tutor-buddy'
     };
 
-    if (process.env.DB_INSTANCE && process.env.
-        'NODE_ENV' === 'production') {
+    if (process.env.DB_INSTANCE && process.env.NODE_ENV === 'production') {
         options.socketPath = `/cloudsql/${process.env.DB_INSTANCE}`;
     }
 
