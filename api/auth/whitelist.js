@@ -6,5 +6,6 @@ module.exports = {
     '/auth/facebook/handle_token': true,
     '/': true,
     '/index.html': true,
-    '/favicon.ico': true
+    '/favicon.ico': true,
+    '/fb-access-denied.html': true
 };

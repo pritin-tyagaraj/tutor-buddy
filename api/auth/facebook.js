@@ -19,9 +19,18 @@ module.exports = {
     },
 
     handleLoginCodeResponse: function(req, res, next) {
-        // We logged in and got a code. Now we exchange it with an access_token. TODO: What if the user clicked on 'Cancel' and denied permissions?
-        var params = url.parse(req.url, true).query; //
+        // We logged in and got a code.
+        var params = url.parse(req.url, true).query;
         var sGetAccessTokenUrl = util.format(authConfig.FACEBOOK_GET_TOKEN_URL, authConfig.FACEBOOK_APP_ID, authConfig.FACEBOOK_REDIRECT_URL, authConfig.FACEBOOK_APP_SECRET, params.code);
+
+        // Did the user grant access? Check the response
+        if (params.error && params.error === 'access_denied') {
+            winston.error('The user didn\'t grant access to the app via Facebook.');
+            res.redirect('/fb-access-denied.html', next);
+            return;
+        }
+
+        // Now we exchange it with an access_token.
         winston.info('Exchanging FB code for token...');
         https.get(sGetAccessTokenUrl, function(httpRes) {
             var body = '';
