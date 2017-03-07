@@ -43,7 +43,7 @@ module.exports = {
         // Does the user already have a tutor profile? If yes, we can't create another.
         model.user.isUserTutor(req.user.id, (err, tutorProfileExists) => {
             if (err) {
-                return cb(err);
+                throw err;
             }
 
             if (tutorProfileExists) {
@@ -65,6 +65,33 @@ module.exports = {
                     res.send(201);
                 });
             }
+        });
+    },
+
+    /**
+     * Returns the tutor profile of the current user
+     */
+    getTutorProfile: function(req, res, next) {
+        //Is the user even a tutor?
+        model.user.isUserTutor(req.user.id, (err, isTutor) => {
+            if (err) throw err;
+            if (!isTutor) {
+                winston.error('getTutorProfile called for user who isn\'t a tutor');
+                res.json(404, {
+                    message: 'The user doesn\'t have an associated tutor profile'
+                });
+            }
+
+            //Get the tutor profile
+            winston.info('User is a tutor. Fetching tutor profile...');
+            model.tutor.getTutorProfile(req.user.id, (err, result) => {
+                if (err) {
+                    winston.error('getTutorProfile failed');
+                    return next(err);
+                }
+
+                res.json(200, result);
+            });
         });
     },
 

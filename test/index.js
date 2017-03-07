@@ -19,7 +19,7 @@ var aTestSetupQueries = [
     'DROP TABLE IF EXISTS `tutor_batch_map-test`',
 
     // Create test tables
-    'CREATE TABLE `users-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `first_name` varchar(255) DEFAULT NULL, `last_name` varchar(255) DEFAULT NULL, `email` varchar(255) DEFAULT NULL, `facebook_id` varchar(255) DEFAULT NULL, `facebook_token` text, `session_id` text, `tutor_profile_id` int(11) DEFAULT NULL, `student_profile_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8',
+    'CREATE TABLE `users-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `first_name` varchar(255) DEFAULT NULL, `last_name` varchar(255) DEFAULT NULL, `email` varchar(255) DEFAULT NULL, `facebook_id` varchar(255) DEFAULT NULL, `facebook_token` text, `session_id` text, `tutor_profile_id` int(11) DEFAULT NULL, `student_profile_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `tutors-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8',
     'CREATE TABLE `tutor_batch_map-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `tutor_id` int(11) DEFAULT NULL, `batch_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
 
@@ -115,14 +115,38 @@ describe('Static files with authentication', function() {
 });
 
 describe('/tutor API', function() {
-    it('POST /tutor - Creates a tutor profile for the current user', function(done) {
+    it('GET /api/v1/tutor - Returns 404 if no tutor profile is available for current user', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/tutor')
+            .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
+            .expect(404)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('POST /api/v1/tutor - Creates a tutor profile for the current user', function(done) {
+        this.timeout(5000);
         server.post('/api/v1/tutor')
             .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
             .expect(201)
+            .expect('resource', /[a-zA-Z0-9]/)
             .end(function(err, res) {
                 if (err) throw err;
                 done();
             })
+    });
+
+    it('GET /api/v1/tutor - Get the existing tutor profile for the current user', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/tutor')
+            .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
     });
 
     it('DELETE /tutor - Removes the tutor profile for the current user');

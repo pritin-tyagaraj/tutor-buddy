@@ -98,10 +98,8 @@ function createNewUser(firstName, lastName, email, facebookId, facebookAccessTok
  */
 function isUserTutor(userId, cb) {
     const connection = getConnection();
-    console.error("isUserTutor");
     connection.query('SELECT `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, result) => {
         if (err) {
-            console.error(err);
             return cb(err);
         }
 
@@ -113,6 +111,17 @@ function isUserTutor(userId, cb) {
         }
     });
     connection.end();
+}
+
+function getTutorProfile(userId, cb) {
+    const connection = getConnection();
+    connection.query('SELECT ' + Table.TUTORS + '.* FROM ' + Table.TUTORS + ' INNER JOIN ' + Table.USERS + ' WHERE ' + Table.USERS + '.id = ?', userId, (err, results) => {
+        if (err) {
+            return cb(err);
+        }
+
+        cb(null, results[0]);
+    });
 }
 
 /**
@@ -175,6 +184,8 @@ module.exports = {
         isUserTutor: isUserTutor
     },
     tutor: {
+        getTutorProfile,
+        getTutorProfile,
         createTutorProfile: createTutorProfile
     }
 };
