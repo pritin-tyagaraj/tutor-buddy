@@ -60,6 +60,7 @@ winston.info('Setting up user routes... Done.');
 // Setup 'tutor' routes
 server.get('/tutor', require('./api/v1/tutor').getCurrentUserTutorProfile);
 server.put('/tutor', require('./api/v1/tutor').updateCurrentUserTutorProfile);
+server.post('/api/v1/tutor', require('./api/v1/user').createTutorProfile);
 server.get('/tutor/:tutorId/batches', require('./api/v1/tutor').getBatchesForTutor);
 server.post('/tutor/:tutorId/batches', require('./api/v1/tutor').createBatchForTutor);
 winston.info('Setting up tutor routes... Done.');
