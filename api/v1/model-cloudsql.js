@@ -6,7 +6,9 @@ const mysql = require('mysql');
 // DB table names (we use different tables for running tests)
 var Table = {
     USERS: (process.env.mode === 'TEST') ? '`users-test`' : '`users`',
-    TUTORS: (process.env.mode === 'TEST') ? '`tutors-test`' : '`tutors`'
+    TUTORS: (process.env.mode === 'TEST') ? '`tutors-test`' : '`tutors`',
+    BATCHES: (process.env.mode === 'TEST') ? '`batches-test`' : '`batches`',
+    TUTOR_BATCH_MAP: (process.env.mode === 'TEST') ? '`tutor_batch_map-test`' : '`tutor_batch_map`'
 };
 
 /**
@@ -175,6 +177,46 @@ function createTutorProfile(userId, cb) {
     });
 }
 
+/**
+ * Create a new batch for a tutor and maps it to the tutor
+ */
+function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
+    const connection = getConnection();
+    connection.beginTransaction(function(err) {
+        if (err) {
+            winston.error('Error while starting transaction for createBatch', {
+                err: err
+            });
+            return cb(err);
+        }
+
+        // Create a new batch
+        connection.query('INSERT INTO ' + Table.BATCHES + ' (`name`, `subject`, `address_text`) VALUES (?, ?, ?)', [batchName, batchSubject, batchAddressText], (err, result) => {
+            if (err) return cb(err);
+
+            // Map this batch to the tutor
+            var batchId = result.insertId;
+            connection.query('INSERT INTO ' + Table.TUTOR_BATCH_MAP + ' (`tutor_id`, `batch_id`) VALUES (?, ?)', [tutorId, batchId], (err) => {
+                if (err) return cb(err);
+
+                // OK done!
+                connection.commit((err) => {
+                    if (err) {
+                        connection.rollback(() => {
+                            winston.error('Error while committing transaction in createBatch');
+                            throw err;
+                        })
+                    }
+
+                    connection.end();
+                    cb(null, batchId);
+                });
+
+            })
+        });
+    });
+}
+
 module.exports = {
     user: {
         readByFacebookId: readByFacebookId,
@@ -184,8 +226,10 @@ module.exports = {
         isUserTutor: isUserTutor
     },
     tutor: {
-        getTutorProfile,
-        getTutorProfile,
+        getTutorProfile: getTutorProfile,
         createTutorProfile: createTutorProfile
+    },
+    batch: {
+        createBatch: createBatch
     }
 };
