@@ -9,7 +9,7 @@ module.exports = {
     checkUserAuthentication: function(req, res, next) {
         // Exclude unprotected paths
         winston.info('Authenticating request for %s', url.parse(req.url).pathname);
-        if (authWhitelist[url.parse(req.url).pathname]) {
+        if (authWhitelist.isAllowed(url.parse(req.url).pathname)) {
             winston.info('Route is whitelisted. Auth: OK', url.parse(req.url).pathname);
             next();
             return;
