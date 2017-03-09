@@ -1,5 +1,7 @@
 'use strict';
 
+const model = require('./model-cloudsql');
+
 module.exports = {
     getCurrentUserTutorProfile: function(req, res, next) {
 
@@ -18,7 +20,11 @@ module.exports = {
     },
 
     createBatchForTutor: function(req, res, next) {
+        // Get info from the URL path
+        var tutorId = req.params.tutorId;
 
+        // Get info from the request payload
+        winston.error(req.params);
     }
 };
 

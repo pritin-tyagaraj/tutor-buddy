@@ -37,6 +37,65 @@ module.exports = {
     },
 
     /**
+     * Creates a new tutor profile and maps it to the currently logged in user
+     */
+    createTutorProfile: function(req, res, next) {
+        // Does the user already have a tutor profile? If yes, we can't create another.
+        model.user.isUserTutor(req.user.id, (err, tutorProfileExists) => {
+            if (err) {
+                throw err;
+            }
+
+            if (tutorProfileExists) {
+                winston.error('Tutor profile already exists for user %s. Cannot create.', req.user.id);
+                res.json(400, {
+                    error: 'User already has a tutor profile'
+                });
+            } else {
+                // Create a new tutor profile and map the created ID in the users table. Return the created tutor ID
+                model.tutor.createTutorProfile(req.user.id, (err, tutorId) => {
+                    if (err) {
+                        winston.error('createTutorProfile failed');
+                        return next(err);
+                    }
+
+                    // Done!
+                    winston.info('Tutor profile %s created for user %s', tutorId, req.user.id);
+                    res.header('resource', tutorId);
+                    res.send(201);
+                });
+            }
+        });
+    },
+
+    /**
+     * Returns the tutor profile of the current user
+     */
+    getTutorProfile: function(req, res, next) {
+        //Is the user even a tutor?
+        model.user.isUserTutor(req.user.id, (err, isTutor) => {
+            if (err) throw err;
+            if (!isTutor) {
+                winston.error('getTutorProfile called for user who isn\'t a tutor');
+                res.json(404, {
+                    message: 'The user doesn\'t have an associated tutor profile'
+                });
+            }
+
+            //Get the tutor profile
+            winston.info('User is a tutor. Fetching tutor profile...');
+            model.tutor.getTutorProfile(req.user.id, (err, result) => {
+                if (err) {
+                    winston.error('getTutorProfile failed');
+                    return next(err);
+                }
+
+                res.json(200, result);
+            });
+        });
+    },
+
+    /**
      * Log the user in (if the facebook ID provided has already been registered) or register the user (if it's a new user). In either case, a new session is created and the user is redirected to the landing page of the protected area.
      */
     loginOrCreateUser: function(facebook_id, access_token, res, next) {
