@@ -116,6 +116,19 @@ describe('Static files with authentication', function() {
     it('/dashboard/does-not-exist (requires auth, but doesn\'t exist) redirects to authentication path');
 });
 
+describe('/user API', function() {
+    it('GET /api/v1/user - Returns the profile of the current user', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/user')
+            .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+});
+
 describe('/tutor API', function() {
     it('GET /api/v1/tutor - Returns 404 if no tutor profile is available for current user', function(done) {
         this.timeout(5000);

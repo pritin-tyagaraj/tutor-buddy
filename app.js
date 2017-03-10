@@ -54,7 +54,7 @@ require('./api/auth/facebook').initServerRoutes(server);
 winston.info('Setting up facebook auth routes... Done.');
 
 // Setup 'user' routes
-server.get('/user', require('./api/v1/user').getCurrentUser);
+server.get('/api/v1/user', require('./api/v1/user').getCurrentUser);
 winston.info('Setting up user routes... Done.');
 
 // Setup 'tutor' routes
