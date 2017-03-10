@@ -1,10 +1,42 @@
 'use strict';
 const model = require(`./model-cloudsql`);
 const winston = require('winston');
+const user = require('./user')
 
 module.exports = {
-    getBatchesForTutor: function(req, res, next) {
+    getBatchesForUser: function(req, res, next) {
+        winston.info('Getting list of batches for user %s', req.user.id);
+        var userId = req.user.id;
+        model.tutor.getTutorProfile(userId, (err, dbTutorProfile) => {
+            if (err) {
+                winston.error("Error in getBatchesForUser", {
+                    err: err
+                });
+                return next(err);
+            }
 
+            // Does the user have a tutor profile?
+            if (!dbTutorProfile) {
+                res.json(400, {
+                    message: 'User doesn\'t have an associated tutor profile'
+                });
+                return next();
+            }
+
+            var tutorId = dbTutorProfile.id;
+            winston.info('User\'s tutor profile ID is %s', tutorId);
+            winston.info('Getting list of batches for tutor %s', tutorId);
+            model.batch.getBatchesForTutor(tutorId, (err, results) => {
+                if (err) {
+                    winston.error("Error in getBatchesForTutor", {
+                        err: err
+                    });
+                    return next(err);
+                }
+
+                res.json(200, results);
+            });
+        });
     },
 
     createBatchForTutor: function(req, res, next) {
@@ -12,7 +44,6 @@ module.exports = {
         try {
             var body = JSON.parse(JSON.stringify(req.body));
         } catch (err) {
-            console.error("xxxxx");
             winston.error('Error parsing request body : %s', req.body);
             res.send(400, {
                 message: 'The request body does not contain valid JSON'

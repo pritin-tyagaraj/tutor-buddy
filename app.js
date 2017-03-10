@@ -61,9 +61,12 @@ winston.info('Setting up user routes... Done.');
 server.get('/api/v1/tutor', require('./api/v1/user').getTutorProfile);
 server.post('/api/v1/tutor', require('./api/v1/user').createTutorProfile);
 server.put('/tutor', require('./api/v1/tutor').updateCurrentUserTutorProfile);
-server.get('/tutor/:tutorId/batches', require('./api/v1/tutor').getBatchesForTutor);
 server.post('/api/v1/tutor/:tutorId/batches', require('./api/v1/batch').createBatchForTutor);
 winston.info('Setting up tutor routes... Done.');
+
+// Setup 'batches' routes
+server.get('/api/v1/batches', require('./api/v1/batch').getBatchesForUser);
+winston.info('Setting up batch routes... Done.');
 
 // Serve the static UI resources
 server.get(/^\/?.*/, restify.serveStatic({

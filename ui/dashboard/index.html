@@ -14,14 +14,18 @@
         <!-- Load app resources -->
         <script src="dashboard/shared/services/apiConnector.js"></script>
         <script src="dashboard/shared/services/userService.js"></script>
+        <script src="dashboard/shared/services/batchService.js"></script>
         <script src="dashboard/components/overview/overview.js"></script>
         <script src="dashboard/components/payments/payments.js"></script>
+        <script src="dashboard/components/batches/batches.js"></script>
         <script src="dashboard/app.js"></script>
 
-        <!-- Angular Material CSS -->
+        <!-- Angular Material-->
         <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+        <link rel="stylesheet" href="dashboard/assets/css/md-expansion-panel.min.css">
         <link rel="stylesheet" href="dashboard/assets/css/app.css">
         <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+        <script src="dashboard/assets/js/md-expansion-panel-min.js"></script>
 
         <!-- Additional Angular libraries required for Angular-Material -->
         <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.6.2/angular-animate.min.js"></script>
@@ -68,7 +72,7 @@
                         </md-button>
                       </div>
                 </md-toolbar>
-                <div ng-view></div>
+                <div ng-view class="tbView"></div>
               <!-- <div layout="column" layout-align="top center">
                 <p>
                 The left sidenav will 'lock open' on a medium (>=960px wide) device.

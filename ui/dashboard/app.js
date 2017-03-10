@@ -1,4 +1,4 @@
-var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngRoute', 'overview', 'payments', 'apiConnector']);
+var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngRoute', 'overview', 'payments', 'batches', 'apiConnector']);
 welcomeApp.controller('appController', function($scope, $timeout, $mdSidenav, $log, $rootScope, $route, $window, tbUserService) {
     $scope.message = 'This message is in the scope!';
     $scope.appTitle = 'Tutor Buddy';

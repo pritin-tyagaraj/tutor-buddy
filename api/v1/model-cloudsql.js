@@ -138,7 +138,7 @@ function isUserTutor(userId, cb) {
 
 function getTutorProfile(userId, cb) {
     const connection = getConnection();
-    connection.query('SELECT ' + Table.TUTORS + '.* FROM ' + Table.TUTORS + ' INNER JOIN ' + Table.USERS + ' WHERE ' + Table.USERS + '.id = ?', userId, (err, results) => {
+    connection.query('SELECT ' + Table.TUTORS + '.* FROM ' + Table.TUTORS + ' INNER JOIN ' + Table.USERS + ' WHERE ' + Table.USERS + '.id = ?', [userId], (err, results) => {
         if (err) {
             return cb(err);
         }
@@ -199,6 +199,21 @@ function createTutorProfile(userId, cb) {
 }
 
 /**
+ * Returns the existing batches for the provided user.
+ */
+function getBatchesForTutor(tutorId, cb) {
+    const connection = getConnection();
+    connection.query('SELECT batches.* FROM batches JOIN tutor_batch_map ON batches.id = tutor_batch_map.batch_id JOIN tutors ON tutors.id = ?', [tutorId], (err, results) => {
+        if (err) {
+            return cb(err)
+        }
+
+        cb(null, results);
+    });
+    connection.end();
+}
+
+/**
  * Create a new batch for a tutor and maps it to the tutor
  */
 function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
@@ -252,6 +267,7 @@ module.exports = {
         createTutorProfile: createTutorProfile
     },
     batch: {
+        getBatchesForTutor: getBatchesForTutor,
         createBatch: createBatch
     }
 };
