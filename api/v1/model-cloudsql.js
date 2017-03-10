@@ -82,6 +82,27 @@ function terminateSession(userId, cb) {
 }
 
 /**
+ * Get the user profile of the specified user
+ */
+function getUserProfile(userId, cb) {
+    const connection = getConnection();
+    connection.query('SELECT `first_name`, `last_name`, `email` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, results) => {
+        if (err) {
+            return cb(err);
+        }
+
+        if (results.length == 0) {
+            winston.error('getUserProfile returned nothing for user ID %s', userId);
+            return cb({
+                message: 'User profile for user ' + userId + ' not found.'
+            });
+        }
+        cb(null, results[0]);
+    });
+    connection.end();
+}
+
+/**
  * Creates a new user with the provided info
  */
 function createNewUser(firstName, lastName, email, facebookId, facebookAccessToken, cb) {
@@ -219,6 +240,7 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
 
 module.exports = {
     user: {
+        getUserProfile: getUserProfile,
         readByFacebookId: readByFacebookId,
         createNewSession: createNewSession,
         createNewUser: createNewUser,

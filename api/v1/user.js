@@ -33,7 +33,12 @@ module.exports = {
      * Returns details of the currently logged in user
      */
     getCurrentUser: function(req, res, next) {
-        res.end("<Your user details>");
+        model.user.getUserProfile(req.user.id, (err, result) => {
+            if (err) {
+                throw err;
+            }
+            res.json(200, result);
+        });
     },
 
     /**
