@@ -38,7 +38,7 @@ winston.addColors({
 });
 winston.remove(winston.transports.Console);
 winston.add(winston.transports.Console, {
-    level: process.env.mode === 'TEST' ? 'info' : 'info',
+    level: process.env.mode === 'TEST' ? 'none' : 'info',
     prettyPrint: true,
     colorize: true,
     silent: false,

@@ -203,13 +203,14 @@ function createTutorProfile(userId, cb) {
  */
 function getBatchesForTutor(tutorId, cb) {
     const connection = getConnection();
-    connection.query('SELECT batches.* FROM batches JOIN tutor_batch_map ON batches.id = tutor_batch_map.batch_id JOIN tutors ON tutors.id = ?', [tutorId], (err, results) => {
-        if (err) {
-            return cb(err)
-        }
+    connection.query('SELECT ' + Table.BATCHES + '.* FROM ' + Table.BATCHES + ' JOIN ' + Table.TUTOR_BATCH_MAP + ' ON ' + Table.BATCHES + '.id = ' + Table.TUTOR_BATCH_MAP + '.batch_id JOIN ' + Table.TUTORS + ' ON ' + Table.TUTORS +
+        '.id = ?', [tutorId], (err, results) => {
+            if (err) {
+                return cb(err)
+            }
 
-        cb(null, results);
-    });
+            cb(null, results);
+        });
     connection.end();
 }
 
