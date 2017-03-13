@@ -1,4 +1,4 @@
-angular.module('overview', ['ngMaterial', 'ngRoute', 'ngMdIcons'])
+angular.module('overview', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'apiConnector'])
 
     // Routes for this module
     .config(function($routeProvider) {
@@ -14,6 +14,12 @@ angular.module('overview', ['ngMaterial', 'ngRoute', 'ngMdIcons'])
     })
 
     // Controller
-    .controller('overviewController', function($scope) {
-        $scope.message = "A personalized overview (or maybe upcoming classes/calendar) goes here";
+    .controller('overviewController', function($scope, tbUserService) {
+        $scope.createTutorProfile = function() {
+            tbUserService.createTutorProfile().then(function() {
+                alert('Tutor Profile Created');
+            }, function(data, status) {
+                alert('Server says... \n' + data.statusText + ': ' + data.data.error);
+            });
+        };
     });
