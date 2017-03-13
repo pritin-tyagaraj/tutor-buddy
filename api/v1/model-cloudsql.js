@@ -86,7 +86,7 @@ function terminateSession(userId, cb) {
  */
 function getUserProfile(userId, cb) {
     const connection = getConnection();
-    connection.query('SELECT `first_name`, `last_name`, `email` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, results) => {
+    connection.query('SELECT `first_name`, `last_name`, `email`, `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, results) => {
         if (err) {
             return cb(err);
         }

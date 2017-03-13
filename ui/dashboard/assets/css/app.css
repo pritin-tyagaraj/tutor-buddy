@@ -12,3 +12,7 @@
 .tbView {
     margin: 40px;
 }
+
+.tbTableRowLoading {
+    opacity: 0.2;
+}

@@ -52,9 +52,9 @@ module.exports = {
         // Get the 'variables' that we need to work with
         var tutorId = req.params.tutorId;
         var userId = req.user.id;
-        var batchName = body.batchName;
-        var batchSubject = body.batchSubject;
-        var batchAddressText = body.batchAddressText;
+        var batchName = body.name;
+        var batchSubject = body.subject;
+        var batchAddressText = body.address_text;
 
         // Is the user allowed to create a batch for this tutor? Currently, the tutor profile should be mapped to the user for this to be allowed.
         model.tutor.getTutorProfile(userId, (err, dbTutorProfile) => {

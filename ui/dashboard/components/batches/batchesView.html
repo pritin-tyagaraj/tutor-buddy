@@ -1,5 +1,5 @@
 <!-- FAB -->
-<md-button class="md-fab tbFAB" aria-label="Create new batch">
+<md-button class="md-fab tbFAB" aria-label="Create new batch" ng-click="createBatch($event)">
     <ng-md-icon icon="group_add" style="fill:white;" size="32"></ng-md-icon>
 </md-button>
 
@@ -7,13 +7,8 @@
 <md-progress-linear md-mode="indeterminate" ng-show="isLoading"></md-progress-linear>
 
 <!-- Panel Group -->
-<h3> 3 Batches </h3>
-<h3> 3 Batches </h3>
-<h3> 3 Batches </h3>
-<h3> 3 Batches </h3>
-<h3> 3 Batches </h3>
 <md-expansion-panel-group md-component-id="panelGroup" multiple>
-<md-expansion-panel ng-repeat="batch in batches">
+<md-expansion-panel ng-class="{tbTableRowLoading: isLoading}" ng-repeat="batch in batches">
   <md-expansion-panel-collapsed>
     <div class="md-title">{{batch.name}}</div>
     <div class="md-summary">{{batch.subject}}</div>
