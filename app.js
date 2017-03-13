@@ -1,5 +1,6 @@
 'use strict';
 
+require('@google-cloud/debug-agent').start();
 var restify = require('restify');
 var plugins = require('restify-plugins');
 var winston = require('winston');
@@ -66,6 +67,12 @@ winston.info('Setting up tutor routes... Done.');
 
 // Setup 'batches' routes
 server.get('/api/v1/batches', require('./api/v1/batch').getBatchesForUser);
+
+// Google Cloud Health Check paths
+server.get('/_ah/vm_health', (req, res) => {
+    res.json(200);
+});
+
 winston.info('Setting up batch routes... Done.');
 
 // Serve the static UI resources

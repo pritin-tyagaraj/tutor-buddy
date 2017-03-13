@@ -108,7 +108,7 @@ module.exports = {
             winston.error('Trying to loginOrCreate a user without an FB ID!');
         }
 
-        winston.log('Check if FB ID %s is returning or is new user', facebook_id);
+        winston.info('Check if FB ID %s is returning or is new user', facebook_id);
         model.user.readByFacebookId(facebook_id, (err, user) => {
             if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!

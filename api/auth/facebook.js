@@ -36,8 +36,10 @@ module.exports = {
         var sGetAccessTokenUrl = util.format(authConfig.FACEBOOK_GET_TOKEN_URL, authConfig.FACEBOOK_APP_ID, authConfig.FACEBOOK_REDIRECT_URL, authConfig.FACEBOOK_APP_SECRET, params.code);
 
         // Did the user grant access? Check the response
-        if (params.error && params.error === 'access_denied') {
-            winston.error('The user didn\'t grant access to the app via Facebook.');
+        if (!params || params.error === 'access_denied') {
+            winston.error('The user didn\'t grant access to the app via Facebook. Received parameters: ', {
+                params: params
+            });
             res.redirect('/fb-access-denied.html', next);
             return;
         }
@@ -52,6 +54,7 @@ module.exports = {
             httpRes.on('end', () => {
                 //We've just now finished receiving the access_token!
                 var accessToken = JSON.parse(body).access_token;
+                console.error(JSON.parse(body));
 
                 //Verify the received access_token (and also get the user's ID).
                 winston.info('Verifying received access token %s', accessToken);
