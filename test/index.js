@@ -39,7 +39,7 @@ var options = {
     multipleStatements: true
 };
 
-if (process.env.DB_INSTANCE && process.env.NODE_ENV === 'production') {
+if ((process.env.MODE !== 'TEST') && (process.env.MODE !== DEV)) {
     options.socketPath = `/cloudsql/${process.env.DB_INSTANCE}`;
 }
 var connection = mysql.createConnection(options);
