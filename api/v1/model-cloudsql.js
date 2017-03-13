@@ -2,6 +2,7 @@
 
 const extend = require('lodash').assign;
 const mysql = require('mysql');
+const winston = require('winston');
 
 // DB table names (we use different tables for running tests)
 var Table = {
@@ -254,6 +255,79 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
     });
 }
 
+/**
+ * Gets the tutor ID of the owner of the provided batch
+ */
+function getBatchOwner(batchId, cb) {
+    const connection = getConnection();
+    connection.query('SELECT `tutor_id` FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], (err, result) => {
+        if (err) {
+            winston.error(err);
+            cb(err);
+        }
+
+        if (result.length == 0) {
+            winston.info('Found no owner for batch %s', batchId);
+            cb(null, "");
+        } else if (result.length > 1) {
+            winston.error('Found multiple owners for batch %s', batchId);
+            cb(null, null);
+        } else {
+            var tutorId = result[0].tutor_id;
+            winston.info('Found tutorId %s for batch %s', tutorId, batchId);
+            cb(null, tutorId);
+        }
+    });
+    connection.end();
+}
+
+/**
+ * Deletes the provided batch. Update both the 'batches' table and the 'tutor-batch-map' table
+ */
+function deleteBatch(batchId, cb) {
+    const connection = getConnection();
+    connection.beginTransaction(function(err) {
+        if (err) {
+            winston.error('Error starting transaction for deleteBatch', {
+                err: err
+            });
+            return cb(err);
+        }
+
+        //Delete the batch from the BATCHES table
+        connection.query('DELETE FROM ' + Table.BATCHES + ' WHERE `id` = ?', [batchId], (err) => {
+            if (err) {
+                winston.error('Error deleting batch from the "batches" table', {
+                    err: err
+                });
+                return cb(err);
+            }
+
+            //Delete the entry from the tutor-batch map
+            connection.query('DELETE FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], (err) => {
+                if (err) {
+                    winston.error('Error deleting batch from tutor-batch-map', {
+                        err: err
+                    });
+                    return cb(err);
+                }
+
+                // Commit the transaction
+                connection.commit((err) => {
+                    if (err) {
+                        connection.rollback(() => {
+                            winston.error('Error while committing transaction in deleteBatch');
+                            throw err;
+                        })
+                    }
+                    connection.end();
+                    cb(null);
+                });
+            });
+        });
+    });
+}
+
 module.exports = {
     user: {
         getUserProfile: getUserProfile,
@@ -269,6 +343,8 @@ module.exports = {
     },
     batch: {
         getBatchesForTutor: getBatchesForTutor,
-        createBatch: createBatch
+        createBatch: createBatch,
+        getBatchOwner: getBatchOwner,
+        deleteBatch: deleteBatch
     }
 };

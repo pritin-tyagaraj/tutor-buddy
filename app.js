@@ -67,6 +67,7 @@ winston.info('Setting up tutor routes... Done.');
 
 // Setup 'batches' routes
 server.get('/api/v1/batches', require('./api/v1/batch').getBatchesForUser);
+server.del('/api/v1/batch/:batchId', require('./api/v1/batch').deleteBatch);
 
 // Google Cloud Health Check paths
 server.get('/_ah/vm_health', (req, res) => {

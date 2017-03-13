@@ -33,26 +33,46 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
                     //Cancel was pressed
                 });
         };
-    });
 
-// Controller for the 'Create batch' controller
-function NewBatchDialogController($scope, $mdDialog) {
-    var controller = this;
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-    $scope.form = {};
-    $scope.done = function(batchForm) {
-        $mdDialog.hide($scope.batch);
-    };
-}
+        //Handle deletion of batches
+        $scope.deleteBatch = function(ev, batch) {
+            var confirmDialog = $mdDialog.confirm()
+                .title('Delete Batch')
+                .textContent('The batch \'' + batch.name + '\' will permanently be deleted. Are you sure you want to proceed?')
+                .ariaLabel('Delete Batch ' + batch.name)
+                .targetEvent(ev)
+                .ok('Yes, delete this batch')
+                .cancel('Cancel');
 
-// ----- PRIVATE FUNCTIONS ------ //
-function refreshBatchList($scope, tbBatchService) {
-    // Load the list of batches
-    $scope.isLoading = true;
-    tbBatchService.getBatchesForUser().then(function(data) {
-        $scope.batches = data;
-        $scope.isLoading = false;
+            $mdDialog.show(confirmDialog).then(function() {
+                // User confirmed deletion
+                $scope.isLoading = true;
+                tbBatchService.deleteBatch(batch.id).then(function() {
+                    //Batch has been deleted. Refresh the list of batches now
+                    refreshBatchList($scope, tbBatchService);
+                });
+            });
+        };
+
+        // Controller for the 'Create batch' controller
+        function NewBatchDialogController($scope, $mdDialog) {
+            var controller = this;
+            $scope.cancel = function() {
+                $mdDialog.cancel();
+            };
+            $scope.form = {};
+            $scope.done = function(batchForm) {
+                $mdDialog.hide($scope.batch);
+            };
+        }
+
+        // ----- PRIVATE FUNCTIONS ------ //
+        function refreshBatchList($scope, tbBatchService) {
+            // Load the list of batches
+            $scope.isLoading = true;
+            tbBatchService.getBatchesForUser().then(function(data) {
+                $scope.batches = data;
+                $scope.isLoading = false;
+            });
+        }
     });
-}
