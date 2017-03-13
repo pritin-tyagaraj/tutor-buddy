@@ -22,7 +22,7 @@ module.exports = {
      * Route handler for triggering a facebook login/registration
      */
     triggerUserLogin: function(req, res, next) {
-        var loginUrl = util.format(authConfig.FACEBOOK_LOGIN_URL, authConfig.FACEBOOK_APP_ID, authConfig.FACEBOOK_REDIRECT_URL, authConfig.FACEBOOK_PERMISSIONS);
+        var loginUrl = util.format(authConfig.FACEBOOK_LOGIN_URL, authConfig.FACEBOOK_APP_ID, authConfig.FACEBOOK_PERMISSIONS, authConfig.FACEBOOK_REDIRECT_URL);
         winston.info('Redirecting to facebook login URL...');
         res.redirect(loginUrl, next);
     },
