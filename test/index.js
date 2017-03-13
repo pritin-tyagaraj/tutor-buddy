@@ -29,8 +29,10 @@ var aTestSetupQueries = [
     'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`, `tutor_profile_id`) VALUES (\'1\', \'TestTutorUserFirstName\', \'TestTutorUserLastName\', \'pritin.cool+tutor@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0\', \'1\')',
     'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`) VALUES (\'2\', \'TestUserFirstName\', \'TestUserLastName\', \'pritin.cool@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\')',
     'INSERT INTO `batches-test` (`id`) VALUES (1)',
+    'INSERT INTO `batches-test` (`id`) VALUES (2)', //This is to test deleteBatch
     'INSERT INTO `tutors-test` (`id`) VALUES (1)',
-    'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,1)'
+    'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,1)',
+    'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,2)' // This is to test deleteBatch
 ];
 var options = {
     user: process.env.DB_USER,
@@ -202,11 +204,33 @@ describe('/batch API', function() {
             .end(function(err, res) {
                 if (err) throw err;
                 done();
-            })
+            });
     });
 
     it('GET /batch/:batchId - Read info about a batch')
     it('PUT /batch/:batchId - Edits a batch');
-    it('DELETE /batch/:batchId - Deletes a batch');
+
+    it('DELETE /api/v1/batch/:batchId - Deletes a batch', function(done) {
+        this.timeout(5000);
+        server.del('/api/v1/batch/2')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('DELETE /api/v1/batch/:batchId - Trying to delete a batch that doesn\'t exist results in an error', function(done) {
+        this.timeout(5000);
+        server.del('/api/v1/batch/4')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(400)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
     it('GET /batch/:batchId/students - Lists students in a batch');
 });

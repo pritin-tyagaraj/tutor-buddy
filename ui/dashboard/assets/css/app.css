@@ -20,3 +20,8 @@
 .tbNavItemSelected {
     background: #e0e5ff;
 }
+
+.tbClickablePanelHeader {
+    cursor: pointer;
+    cursor: hand;
+}
