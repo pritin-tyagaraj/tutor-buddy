@@ -42,18 +42,20 @@
                 md-component-id="left"
                 md-is-locked-open="$mdMedia('gt-md')"
                 md-whiteframe="4">
-              <md-toolbar class="md-theme-indigo">
-                <h1 class="md-toolbar-tools">Sidenav Left</h1>
-              </md-toolbar>
-              <md-content layout-padding>
-                <md-button ng-click="close()" class="md-primary" hide-gt-md>
-                  Close Sidenav Left
-                </md-button>
-                <p hide show-gt-md>
-                  On smaller screens/smaller browser windows, this area is not always visible.
-                </p>
-              </md-content>
-
+                <md-toolbar class="md-theme-indigo">
+                    <h1 class="md-toolbar-tools">Sidenav Left</h1>
+                </md-toolbar>
+                <md-content>
+                    <md-list flex>
+                        <md-list-item ng-class="{tbNavItemSelected: (currentRoute === navItem.navTarget)}" class="md-3-line" ng-repeat="navItem in navItems" ng-click="navigate(navItem.navTarget)">
+                            <ng-md-icon icon="{{navItem.icon}}" class="md-avatar" alt="{{navItem.primaryText}}"></ng-md-icon>
+                            <div class="md-list-item-text" layout="column">
+                                <h3>{{navItem.primaryText}}</h3>
+                                <p>{{navItem.secondaryText}}</p>
+                            </div>
+                        </md-list-item>
+                    </md-list>
+                </md-content>
             </md-sidenav>
 
             <md-content flex>
@@ -73,31 +75,6 @@
                       </div>
                 </md-toolbar>
                 <div ng-view class="tbView"></div>
-              <!-- <div layout="column" layout-align="top center">
-                <p>
-                The left sidenav will 'lock open' on a medium (>=960px wide) device.
-                </p>
-                <p>
-                The right sidenav will focus on a specific child element.
-                </p>
-
-                <div>
-                  <md-button ng-click="toggleLeft()"
-                    class="md-primary" hide-gt-md>
-                    Toggle left
-                  </md-button>
-                </div>
-
-                <div>
-                  <md-button ng-click="toggleRight()"
-                    ng-hide="isOpenRight()"
-                    class="md-primary">
-                    Toggle right
-                  </md-button>
-                </div>
-              </div>
-
-              <div flex></div> -->
 
             </md-content>
 

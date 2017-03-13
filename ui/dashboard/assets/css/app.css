@@ -16,3 +16,7 @@
 .tbTableRowLoading {
     opacity: 0.2;
 }
+
+.tbNavItemSelected {
+    background: #e0e5ff;
+}

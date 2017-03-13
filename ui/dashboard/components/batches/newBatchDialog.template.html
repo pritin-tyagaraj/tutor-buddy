@@ -21,7 +21,7 @@
                               <label>Batch Name</label>
                               <input name="name" required ng-model="batch.name">
                               <div ng-messages="newBatchForm.name.$error">
-                                  <div ng-message="required">Enter a name that you will identify this batch with (e.g "Evening Class for Kids")</div>
+                                  <div ng-message="required">Enter a name that you will identify this batch with (e.g "Evening Class for Kids"). You can change this later.</div>
                               </div>
                           </md-input-container>
                           <md-input-container class="md-block" flex-gt-sm>
@@ -37,7 +37,7 @@
                           <input name="size" required min="0" max="100" type="number" ng-model="batch.size">
                           <div ng-messages="newBatchForm.size.$error">
                               <div ng-message="required">How many students will you have in this batch? (You can change this later)</div>
-                              <div ng-message="max">That's a lot of students! Set something within 100.</div>
+                              <div ng-message="max">That's a lot of students! Set something within 100. You can change this later</div>
                           </div>
                       </md-input-container>
 
@@ -55,7 +55,7 @@
           <md-button ng-click="cancel()">
               Cancel
           </md-button>
-          <md-button ng-disabled="newBatchForm.$invalid" ng-click="done(theTopForm)">
+          <md-button ng-disabled="newBatchForm.$invalid"  class="md-raised md-primary" ng-click="done(theTopForm)">
               OK
           </md-button>
     </md-dialog-actions>
