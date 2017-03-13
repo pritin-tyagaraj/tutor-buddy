@@ -86,7 +86,7 @@ function terminateSession(userId, cb) {
  */
 function getUserProfile(userId, cb) {
     const connection = getConnection();
-    connection.query('SELECT `first_name`, `last_name`, `email` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, results) => {
+    connection.query('SELECT `first_name`, `last_name`, `email`, `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, results) => {
         if (err) {
             return cb(err);
         }
@@ -138,7 +138,7 @@ function isUserTutor(userId, cb) {
 
 function getTutorProfile(userId, cb) {
     const connection = getConnection();
-    connection.query('SELECT ' + Table.TUTORS + '.* FROM ' + Table.TUTORS + ' INNER JOIN ' + Table.USERS + ' WHERE ' + Table.USERS + '.id = ?', userId, (err, results) => {
+    connection.query('SELECT ' + Table.TUTORS + '.* FROM ' + Table.TUTORS + ' INNER JOIN ' + Table.USERS + ' WHERE ' + Table.USERS + '.id = ?', [userId], (err, results) => {
         if (err) {
             return cb(err);
         }
@@ -199,6 +199,22 @@ function createTutorProfile(userId, cb) {
 }
 
 /**
+ * Returns the existing batches for the provided user.
+ */
+function getBatchesForTutor(tutorId, cb) {
+    const connection = getConnection();
+    connection.query('SELECT ' + Table.BATCHES + '.* FROM ' + Table.BATCHES + ' JOIN ' + Table.TUTOR_BATCH_MAP + ' ON ' + Table.BATCHES + '.id = ' + Table.TUTOR_BATCH_MAP + '.batch_id JOIN ' + Table.TUTORS + ' ON ' + Table.TUTORS +
+        '.id = ?', [tutorId], (err, results) => {
+            if (err) {
+                return cb(err)
+            }
+
+            cb(null, results);
+        });
+    connection.end();
+}
+
+/**
  * Create a new batch for a tutor and maps it to the tutor
  */
 function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
@@ -252,6 +268,7 @@ module.exports = {
         createTutorProfile: createTutorProfile
     },
     batch: {
+        getBatchesForTutor: getBatchesForTutor,
         createBatch: createBatch
     }
 };

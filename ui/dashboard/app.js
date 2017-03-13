@@ -1,4 +1,4 @@
-var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngRoute', 'overview', 'payments', 'apiConnector']);
+var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'overview', 'payments', 'batches', 'apiConnector']);
 welcomeApp.controller('appController', function($scope, $timeout, $mdSidenav, $log, $rootScope, $route, $window, tbUserService) {
     $scope.message = 'This message is in the scope!';
     $scope.appTitle = 'Tutor Buddy';
@@ -26,8 +26,8 @@ welcomeApp.controller('appController', function($scope, $timeout, $mdSidenav, $l
     });
 
     // Get the user's name
-    tbUserService.getUserProfile().then(function(response) {
-        $scope.userName = response.data.first_name + ' ' + response.data.last_name;
+    tbUserService.getUserProfile().then(function(data) {
+        $scope.userName = data.first_name + ' ' + data.last_name;
     });
 });
 

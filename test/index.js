@@ -26,7 +26,11 @@ var aTestSetupQueries = [
     'CREATE TABLE `batches-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `name` varchar(255) DEFAULT NULL, `subject` varchar(255) DEFAULT NULL, `address_text` text, `address_lat` float DEFAULT NULL, `address_lng` float DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
 
     // Add the required test data
-    'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`) VALUES (\'1\', \'TestUserFirstName\', \'TestUserLastName\', \'pritin.cool@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0\')'
+    'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`, `tutor_profile_id`) VALUES (\'1\', \'TestTutorUserFirstName\', \'TestTutorUserLastName\', \'pritin.cool+tutor@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0\', \'1\')',
+    'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`) VALUES (\'2\', \'TestUserFirstName\', \'TestUserLastName\', \'pritin.cool@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\')',
+    'INSERT INTO `batches-test` (`id`) VALUES (1)',
+    'INSERT INTO `tutors-test` (`id`) VALUES (1)',
+    'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,1)'
 ];
 var options = {
     user: process.env.DB_USER,
@@ -46,7 +50,8 @@ connection.query(aTestSetupQueries.join(';'), (err, results) => {
 connection.end();
 
 // Start testing already!
-var sTestUserJWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0';
+var sTestTutorUserJWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0';
+var sTestUserJWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoyLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODkxMzM4Mjh9.--iM2pEcceT-pOhvSulNEwFEDnPYC2JLpcn-LZTI7gY';
 describe('Authentication Token/Session ID', function() {
     it('Error if invalid session ID token is provided', function(done) {
         server.get('/dashboard')
@@ -120,7 +125,7 @@ describe('/user API', function() {
     it('GET /api/v1/user - Returns the profile of the current user', function(done) {
         this.timeout(5000);
         server.get('/api/v1/user')
-            .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
             .end(function(err, res) {
                 if (err) throw err;
@@ -169,11 +174,11 @@ describe('/tutor API', function() {
     it('POST /api/v1/tutor/:tutorId/batches - Creates a new batch', function(done) {
         this.timeout(5000);
         server.post('/api/v1/tutor/1/batches')
-            .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
-                batchName: "BatchName",
-                batchAddressText: "BatchAddress",
-                batchSubject: "BatchSubject"
+                name: "BatchName",
+                address_text: "BatchAddress",
+                subject: "BatchSubject"
             })
             .expect(201)
             .expect('resource', /[a-zA-Z0-9]/)
@@ -189,6 +194,17 @@ describe('/tutor API', function() {
 });
 
 describe('/batch API', function() {
+    it('GET /api/v1/batches - Returns all batches of the current user', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/batches')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            })
+    });
+
     it('GET /batch/:batchId - Read info about a batch')
     it('PUT /batch/:batchId - Edits a batch');
     it('DELETE /batch/:batchId - Deletes a batch');
