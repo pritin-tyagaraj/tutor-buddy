@@ -43,7 +43,7 @@ function NewBatchDialogController($scope, $mdDialog) {
     };
     $scope.form = {};
     $scope.done = function(batchForm) {
-        $mdDialog.hide($scope.batch);
+        $mdDialog.hide();
     };
 }
 
