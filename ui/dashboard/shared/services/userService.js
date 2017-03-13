@@ -29,6 +29,16 @@ apiConnector.factory('tbUserService', function($http, $q) {
          */
         getCurrentUser: function() {
             return cache.userProfile;
+        },
+
+        createTutorProfile: function() {
+            var deferred = $q.defer();
+            $http.post('/api/v1/tutor').then(function(response) {
+                deferred.resolve();
+            }, function(data, status, headers, config) {
+                deferred.reject(data, status);
+            });
+            return deferred.promise;
         }
     };
 });
