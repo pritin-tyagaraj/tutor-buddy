@@ -176,9 +176,9 @@ describe('/tutor API', function() {
         server.post('/api/v1/tutor/1/batches')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
-                batchName: "BatchName",
-                batchAddressText: "BatchAddress",
-                batchSubject: "BatchSubject"
+                name: "BatchName",
+                address_text: "BatchAddress",
+                subject: "BatchSubject"
             })
             .expect(201)
             .expect('resource', /[a-zA-Z0-9]/)
