@@ -12,7 +12,9 @@ var allowed = {
         '/welcome/index.html': true,
         '/welcome/bootstrap/script.js': true,
         '/favicon.ico': true,
-        '/fb-access-denied.html': true
+        '/fb-access-denied.html': true,
+        '/.well-known/acme-challenge/1tvWlI0MKwAojMP-hjlFXmspUY9Nv_MfMKEI-bIfvrE': true,
+        '/.well-known/acme-challenge/rfYoOSmZYMf1_TDAyBbCvcKyOlTFftW2j6Miy1ZTMFI': true
     }
 };
 

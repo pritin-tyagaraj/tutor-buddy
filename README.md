@@ -5,7 +5,7 @@
 The Tutor Buddy application enables both private tutors and educational organizations alike to be in sync with their students. Teachers and students keep track of attendance, payments, assignments and more with the neat and lean Tutor Buddy app!
 
 ## Technology
-The scalable API is built with Node.js, and uses a MySQL database. The UI has been created with Angular.js using UI elements from Angular Material. The managed service at https://tutor-buddy.appspot.com (currently not online) is hosted on Google's Flexible Environment App Engine.
+The scalable API is built with Node.js, and uses a MySQL database. The UI has been created with Angular.js using UI elements from Angular Material. The managed service at https://tutorbuddy.logicbomb.in is hosted on Google's Flexible Environment App Engine.
 
 ## Questions? Feedback?
 Please contact pritin@live.com
