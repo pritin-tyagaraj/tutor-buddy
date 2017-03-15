@@ -108,7 +108,7 @@ function getUserProfile(userId, cb) {
  */
 function createNewUser(firstName, lastName, email, facebookId, facebookAccessToken, cb) {
     const connection = getConnection();
-    connection.query('INSERT INTO ? (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?);', [Tabe.USERS, firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
+    connection.query('INSERT INTO ' + Table.USERS + ' (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?)', [firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
         if (err) {
             return cb(err);
         }
@@ -139,7 +139,7 @@ function isUserTutor(userId, cb) {
 
 function getTutorProfile(userId, cb) {
     const connection = getConnection();
-    connection.query('SELECT ' + Table.TUTORS + '.* FROM ' + Table.TUTORS + ' INNER JOIN ' + Table.USERS + ' WHERE ' + Table.USERS + '.id = ?', [userId], (err, results) => {
+    connection.query('SELECT t.* FROM (SELECT * FROM ' + Table.TUTORS + ') AS t INNER JOIN (SELECT * FROM ' + Table.USERS + ' WHERE id = ?) AS u WHERE t.id = u.tutor_profile_id', [userId], (err, results) => {
         if (err) {
             return cb(err);
         }
@@ -204,14 +204,13 @@ function createTutorProfile(userId, cb) {
  */
 function getBatchesForTutor(tutorId, cb) {
     const connection = getConnection();
-    connection.query('SELECT ' + Table.BATCHES + '.* FROM ' + Table.BATCHES + ' JOIN ' + Table.TUTOR_BATCH_MAP + ' ON ' + Table.BATCHES + '.id = ' + Table.TUTOR_BATCH_MAP + '.batch_id JOIN ' + Table.TUTORS + ' ON ' + Table.TUTORS +
-        '.id = ?', [tutorId], (err, results) => {
-            if (err) {
-                return cb(err)
-            }
+    connection.query('SELECT b.* FROM (SELECT * FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE tutor_id = ?) AS a INNER JOIN (SELECT * FROM ' + Table.BATCHES + ') AS b WHERE a.batch_id = b.id', [tutorId], (err, results) => {
+        if (err) {
+            return cb(err)
+        }
 
-            cb(null, results);
-        });
+        cb(null, results);
+    });
     connection.end();
 }
 

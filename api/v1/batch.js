@@ -57,10 +57,12 @@ module.exports = {
         var batchAddressText = body.address_text;
 
         // Is the user allowed to create a batch for this tutor? Currently, the tutor profile should be mapped to the user for this to be allowed.
+        winston.info('Fetching tutor profile for user %s', req.user.id);
         model.tutor.getTutorProfile(userId, (err, dbTutorProfile) => {
             if (err) throw err;
 
             // Does the user have a tutor profile?
+            winston.info('Checking if user %s has an associated tutor profile', req.user.id);
             if (!dbTutorProfile) {
                 res.json(400, {
                     message: 'User doesn\'t have an associated tutor profile'
@@ -69,6 +71,7 @@ module.exports = {
             }
 
             // Make sure the user is trying to create a batch for his own tutor ID
+            winston.info('Checking if user trying to create a batch for his own tutor ID %s', dbTutorProfile.id);
             if (dbTutorProfile.id != tutorId) {
                 res.json(401, {
                     message: 'User is not authorized to create new batches for tutor ' + tutorId
@@ -77,6 +80,7 @@ module.exports = {
             }
 
             // Create a new batch
+            winston.info('Trigger creation of new batch for user %s, tutor ID %s', req.user.id, dbTutorProfile.id);
             model.batch.createBatch(tutorId, batchName, batchSubject, batchAddressText, (err, batchId) => {
                 if (err) throw err;
 
