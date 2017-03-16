@@ -76,6 +76,14 @@ server.get('/_ah/vm_health', (req, res) => {
 
 winston.info('Setting up batch routes... Done.');
 
+// For Letsencrypt verification
+server.get('/.well-known/acme-challenge/1tvWlI0MKwAojMP-hjlFXmspUY9Nv_MfMKEI-bIfvrE', function(req, res, next) {
+    res.send('1tvWlI0MKwAojMP-hjlFXmspUY9Nv_MfMKEI-bIfvrE.1_e_ljwng33zNsyfnh65muyDOSIk4th_glYrG4RJXnM');
+});
+server.get('/.well-known/acme-challenge/rfYoOSmZYMf1_TDAyBbCvcKyOlTFftW2j6Miy1ZTMFI', function(req, res, next) {
+    res.send('rfYoOSmZYMf1_TDAyBbCvcKyOlTFftW2j6Miy1ZTMFI.1_e_ljwng33zNsyfnh65muyDOSIk4th_glYrG4RJXnM');
+});
+
 // Serve the static UI resources
 server.get(/^\/?.*/, restify.serveStatic({
     directory: './ui',
