@@ -40,21 +40,12 @@ module.exports = {
     },
 
     createBatchForTutor: function(req, res, next) {
-        // Parse the request body
-        try {
-            var body = JSON.parse(JSON.stringify(req.body));
-        } catch (err) {
-            winston.error('Error parsing request body : %s', req.body);
-            res.send(400, {
-                message: 'The request body does not contain valid JSON'
-            });
-        }
         // Get the 'variables' that we need to work with
         var tutorId = req.params.tutorId;
         var userId = req.user.id;
-        var batchName = body.name;
-        var batchSubject = body.subject;
-        var batchAddressText = body.address_text;
+        var batchName = req.body.name;
+        var batchSubject = req.body.subject;
+        var batchAddressText = req.body.address_text;
 
         // Is the user allowed to create a batch for this tutor? Currently, the tutor profile should be mapped to the user for this to be allowed.
         winston.info('Fetching tutor profile for user %s', req.user.id);
