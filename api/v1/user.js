@@ -9,6 +9,7 @@ const session = require('../auth/session');
  * Query Facbeook to get the user's email ID, and create a new user in our database.
  */
 function createNewFacebookUser(facebook_id, access_token, cb) {
+    winston.info('Getting user name and email ID from FB for FB user %s', facebook_id);
     var sUrl = util.format('https://graph.facebook.com/v2.8/%s?access_token=%s&fields=first_name,last_name,email', facebook_id, access_token);
     https.get(sUrl, (httpRes) => {
         var body = '';
@@ -23,6 +24,7 @@ function createNewFacebookUser(facebook_id, access_token, cb) {
             var email = httpResponse.email;
 
             // Write to DB and call cb!
+            winston.info('Creating new user entry for FB user %s (%s %s)', facebook_id, firstName, lastName)
             model.user.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
         });
     });
@@ -112,6 +114,7 @@ module.exports = {
         model.user.readByFacebookId(facebook_id, (err, user) => {
             if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!
+                winston.info('User is a returning user. Creating new entry in user table');
                 createNewFacebookUser(facebook_id, access_token, function(err, dbUserId) {
                     if (err) {
                         winston.error('An error occurred while creating a new Facebook user in the users table', {
