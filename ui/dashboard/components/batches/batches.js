@@ -54,15 +54,47 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
             });
         };
 
-        // Controller for the 'Create batch' controller
+        // Handle addition of students
+        $scope.addStudent = function(ev, batch) {
+            var batchId = batch.id;
+            $mdDialog.show({
+                    controller: NewStudentDialogController,
+                    templateUrl: 'dashboard/components/batches/newStudentDialog.template.html',
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    fullscreen: false
+                })
+                .then(function(data) {
+                    $scope.isLoading = true;
+                    debugger;
+                    tbBatchService.addStudent(batchId, data).then(function() {
+                        //TODO: Refresh the student list for only this batch
+                        $scope.isLoading = false;
+                    });
+                }, function() {
+                    //Cancel was pressed
+                });
+        };
+
+        // Controller for the 'Create batch' dialog
         function NewBatchDialogController($scope, $mdDialog) {
-            var controller = this;
             $scope.cancel = function() {
                 $mdDialog.cancel();
             };
-            $scope.form = {};
+
             $scope.done = function(batchForm) {
                 $mdDialog.hide($scope.batch);
+            };
+        }
+
+        // Controller for the 'Add student' dialog
+        function NewStudentDialogController($scope, $mdDialog) {
+            $scope.cancel = function() {
+                $mdDialog.cancel();
+            };
+
+            $scope.done = function() {
+                $mdDialog.hide($scope.student);
             };
         }
 
