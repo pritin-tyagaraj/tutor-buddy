@@ -51,6 +51,19 @@ apiConnector.factory('tbBatchService', function($http, $q) {
                 deferred.reject();
             });
             return deferred.promise;
+        },
+
+        /**
+         * Returns all students in a particular batch
+         */
+        getStudentsForBatch: function(batchId) {
+            var deferred = $q.defer();
+            $http.get('/api/v1/batch/' + batchId + '/students').then(function(response) {
+                deferred.resolve(response.data);
+            }, function(data, status, headers, config) {
+                deferred.reject();
+            });
+            return deferred.promise;
         }
     };
 });

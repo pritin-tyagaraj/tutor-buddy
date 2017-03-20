@@ -236,7 +236,16 @@ describe('/batch API', function() {
             });
     });
 
-    it('GET /batch/:batchId/students - Lists students in a batch');
+    it('GET /batch/:batchId/students - Lists students in a batch', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/batch/1/students')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
 
     it('POST /api/v1/batch/:batchId/students - Adds students if the user is the owner of this batch', function(done) {
         this.timeout(5000);

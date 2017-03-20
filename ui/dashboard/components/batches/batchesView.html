@@ -8,25 +8,62 @@
 
 <!-- Panel Group -->
 <md-expansion-panel-group md-component-id="panelGroup" multiple>
-<md-expansion-panel class="tbClickablePanelHeader" ng-class="{tbTableRowLoading: isLoading}" ng-repeat="batch in batches">
-  <md-expansion-panel-collapsed>
+<md-expansion-panel  ng-class="{tbTableRowLoading: isLoading}" ng-repeat="batch in batches">
+  <md-expansion-panel-collapsed class="tbClickablePanelHeader" ng-click="loadStudentsForBatch(batch)">
     <div class="md-title">{{batch.name}}</div>
     <div class="md-summary">{{batch.subject}}</div>
     <md-expansion-panel-icon></md-expansion-panel-icon>
   </md-expansion-panel-collapsed>
   <md-expansion-panel-expanded>
-    <md-expansion-panel-header ng-click="$panel.collapse()">
+    <md-expansion-panel-header class="tbClickablePanelHeader" ng-click="$panel.collapse()">
       <div class="md-title">{{batch.name}}</div>
       <div class="md-summary">{{batch.subject}}</div>
       <md-expansion-panel-icon></md-expansion-panel-icon>
     </md-expansion-panel-header>
     <md-expansion-panel-content>
-      <h4>Address</h4>
-      <p>{{batch.address_text}}</p>
+      <!-- List of students within each batch -->
+      <div layout="row" layout-xs="column">
+          <div flex>
+              <h3 class="tbFormHeadingClearBottom">Batch Info</h3>
+              <md-input-container class="md-block tbInputClearRight">
+                  <label>Name</label>
+                  <input ng-model="batch.name" disabled>
+              </md-input-container>
+              <md-input-container class="md-block tbInputClearRight">
+                  <label>Subject</label>
+                  <input ng-model="batch.subject" disabled>
+              </md-input-container>
+              <md-input-container class="md-block tbInputClearRight">
+                  <label>Address</label>
+                  <input ng-model="batch.address_text" disabled>
+              </md-input-container>
+          </div>
+          <div flex>
+              <h3>Students</h3>
+              <md-progress-linear md-mode="indeterminate" ng-show="batch.isLoading"></md-progress-linear>
+              <h4 class="tbNoDataText" ng-if="!batch.isLoading && (!batch.students || batch.students.length == 0)">Once you add some students to this batch, you will see them listed here.</h4>
+              <md-list class="md-whiteframe-1dp" ng-if="batch.students && batch.students.length > 0">
+                 <md-list-item ng-repeat="student in batch.students" class="md-2-line">
+                     <img ng-src="{{todos[0].face}}?20" class="md-avatar" alt="{{todos[0].who}}" />
+                     <div class="md-list-item-text">
+                         <h3>{{student.first_name}} {{student.last_name}}</h3>
+                         <p>{{student.email}}</p>
+                     </div>
+                     <md-button class="md-secondary md-icon-button" ng-click="doSecondaryAction($event)" ng-if="student.email" aria-label="call">
+                         <ng-md-icon icon="email" style="fill:grey;" size="20"></ng-md-icon>
+                     </md-button>
+                     <md-button class="md-secondary md-icon-button" ng-click="doSecondaryAction($event)" ng-if="student.phone" aria-label="call">
+                         <ng-md-icon icon="call" style="fill:grey;" size="20"></ng-md-icon>
+                     </md-button>
+                 </md-list-item>
+              </md-list>
+          </div>
+      </div>
+
     </md-expansion-panel-content>
     <md-expansion-panel-footer>
       <div flex></div>
-      <md-button class="md-warn" ng-click="deleteBatch($event, batch)">Delete</md-button>
+      <md-button class="md-warn" ng-click="deleteBatch($event, batch)">Delete Batch</md-button>
       <md-button ng-click="addStudent($event, batch)">Add Student</md-button>
     </md-expansion-panel-footer>
   </md-expansion-panel-expanded>
