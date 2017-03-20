@@ -25,3 +25,15 @@
     cursor: pointer;
     cursor: hand;
 }
+
+.tbInputClearRight {
+    padding-right: 30px;
+}
+
+.tbFormHeadingClearBottom {
+    margin-bottom: 30px;
+}
+
+.tbNoDataText {
+    font-weight: 500;
+}

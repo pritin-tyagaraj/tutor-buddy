@@ -65,15 +65,25 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
                     fullscreen: false
                 })
                 .then(function(data) {
-                    $scope.isLoading = true;
-                    debugger;
+                    // Set 'isLoading' property within the particular batch to TRUE, so that we show progress bar for only this batch
+                    $scope.batches.forEach(function(batch) {
+                        if (batch.id === batchId) {
+                            batch.isLoading = true;
+                        }
+                    });
+
+                    // Start the backend operation to add student to batch
                     tbBatchService.addStudent(batchId, data).then(function() {
-                        //TODO: Refresh the student list for only this batch
-                        $scope.isLoading = false;
+                        refreshStudentList(batchId, $scope, tbBatchService);
                     });
                 }, function() {
                     //Cancel was pressed
                 });
+        };
+
+        // When the user expands a batch, load the list of students
+        $scope.loadStudentsForBatch = function(batch) {
+            refreshStudentList(batch.id, $scope, tbBatchService);
         };
 
         // Controller for the 'Create batch' dialog
@@ -106,5 +116,25 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
                 $scope.batches = data;
                 $scope.isLoading = false;
             });
-        }
+        };
+
+        function refreshStudentList(batchId, $scope, tbBatchService) {
+            // Set 'isLoading' property within the particular batch to TRUE, so that we show progress bar for only this batch
+            $scope.batches.forEach(function(batch) {
+                if (batch.id === batchId) {
+                    batch.isLoading = true;
+                }
+            });
+
+            // Load the list of students for the specified batch
+            tbBatchService.getStudentsForBatch(batchId).then(function(data) {
+                //Loop through loaded batches.. and insert 'students' array
+                $scope.batches.forEach(function(batch) {
+                    if (batch.id === batchId) {
+                        batch.students = data;
+                        batch.isLoading = false;
+                    }
+                });
+            });
+        };
     });

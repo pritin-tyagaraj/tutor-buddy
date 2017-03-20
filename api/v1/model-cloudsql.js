@@ -380,6 +380,23 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
     });
 }
 
+/**
+ * Fetch a list of students belonging to the provided batch ID
+ * @param  {[type]} batchId [description]
+ * @return {[type]}         [description]
+ */
+function getStudentsInBatch(batchId, cb) {
+    const connection = getConnection();
+    connection.query('SELECT b.* FROM (SELECT `student_id` FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ?) AS a INNER JOIN (SELECT * FROM ' + Table.STUDENTS + ') AS b WHERE a.student_id = b.id', [batchId], (err, results) => {
+        if (err) {
+            return cb(err)
+        }
+
+        cb(null, results);
+    });
+    connection.end();
+}
+
 module.exports = {
     user: {
         getUserProfile: getUserProfile,
@@ -400,6 +417,7 @@ module.exports = {
         deleteBatch: deleteBatch
     },
     student: {
-        addStudentToBatch: addStudentToBatch
+        addStudentToBatch: addStudentToBatch,
+        getStudentsInBatch: getStudentsInBatch
     }
 };
