@@ -14,8 +14,14 @@ module.exports = {
         var studentEmail = req.body.email;
 
         // Is the user allowed to add students to this batch?
-        //TODO: Also do quota checks here (free account can't add more than x students etc.)
         model.batch.getBatchOwner(batchId, function(err, owner) {
+            if (err) {
+                winston.error('An error occurred in getBatchOwner', {
+                    err: err
+                });
+                return res.json(500);
+            }
+
             if (owner === userId) {
                 winston.info('User %s is allowed to add students to batch %s. Proceeding...', userId, batchId);
                 model.student.addStudentToBatch(batchId, studentFirstName, studentLastName, studentPhone, studentEmail, (err, studentId) => {
@@ -49,6 +55,13 @@ module.exports = {
         //Is the user allowed to view the list of students for this batch?
         model.batch.getBatchOwner(batchId,
             function(err, owner) {
+                if (err) {
+                    winston.error('An error occurred in getStudentsForBatch', {
+                        err: err
+                    });
+                    return res.json(500);
+                }
+
                 if (owner === userId) {
                     winston.info('User %s is allowed to view the students in batch %s. Proceeding...', userId, batchId);
                     model.student.getStudentsInBatch(batchId, (err, results) => {

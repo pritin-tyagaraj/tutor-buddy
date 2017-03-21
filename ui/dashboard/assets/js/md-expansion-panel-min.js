@@ -1,4 +1,4 @@
-! function() {
+/* eslint-disable */ ! function() {
     "use strict";
     angular.module("material.components.expansionPanels", ["material.core"])
 }(),
@@ -667,3 +667,4 @@ function() {
     }
     angular.module("material.components.expansionPanels").directive("mdExpansionPanelIcon", n)
 }();
+/* eslint-enable */

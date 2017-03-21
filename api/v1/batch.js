@@ -63,7 +63,7 @@ module.exports = {
 
             // Make sure the user is trying to create a batch for his own tutor ID
             winston.info('Checking if user trying to create a batch for his own tutor ID %s', dbTutorProfile.id);
-            if (dbTutorProfile.id != tutorId) {
+            if (dbTutorProfile.id !== parseInt(tutorId, 10)) {
                 res.json(401, {
                     message: 'User is not authorized to create new batches for tutor ' + tutorId
                 });

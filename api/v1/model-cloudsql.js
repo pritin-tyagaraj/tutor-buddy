@@ -32,120 +32,92 @@ function getConnection() {
 }
 
 /**
+ * Helper function to execute SQL queries and do common error handling
+ */
+function executeQuery(queryString, queryParams, errorCb, successCb) {
+    const connection = getConnection();
+    connection.query(queryString, queryParams, (err, results) => {
+        if (err) {
+            winston.error('model: Error while executing query', {
+                err: err
+            });
+            return errorCb(err);
+        }
+        successCb(results);
+    });
+    connection.end();
+}
+
+/**
  * Queries the user DB and returns the user (if found) with a matching Facebook ID or returns a 404 error (if not found)
  */
 function readByFacebookId(id, cb) {
-    const connection = getConnection();
-    connection.query(
-        'SELECT * FROM ' + Table.USERS + ' WHERE `facebook_id` = ?', [id], (err, results) => {
-            if (err) {
-                cb(err);
-                return;
-            }
-            if (!results.length) {
-                cb({
-                    code: 404,
-                    message: 'Not found'
-                });
-                return;
-            }
-            cb(null, results[0]);
-        });
-    connection.end();
+    executeQuery('SELECT * FROM ' + Table.USERS + ' WHERE `facebook_id` = ?', [id], cb, (results) => {
+        if (!results.length) {
+            cb({
+                code: 404,
+                message: 'Not found'
+            });
+            return;
+        }
+        cb(null, results[0]);
+    });
 }
 
 /**
  * Creates a new session in the DB for a given user
  */
 function createNewSession(userId, sessionId, cb) {
-    const connection = getConnection();
-    connection.query(
-        'UPDATE ' + Table.USERS + ' SET `session_id` = ? WHERE `id` = ?', [sessionId, userId], (err, results) => {
-            if (err) {
-                cb(err);
-                return;
-            }
-            cb();
-        });
-    connection.end();
+    executeQuery('UPDATE ' + Table.USERS + ' SET `session_id` = ? WHERE `id` = ?', [sessionId, userId], cb, cb);
 }
 
 /**
  * Deletes a given user's session ID from the database
  */
 function terminateSession(userId, cb) {
-    const connection = getConnection();
-    connection.query('UPDATE ' + Table.USERS + ' SET `session_id` = NULL WHERE `id` = ?', [userId], (err) => {
-        if (err) {
-            return cb(err);
-        }
-        cb(null);
-    });
-    connection.end();
+    executeQuery('UPDATE ' + Table.USERS + ' SET `session_id` = NULL WHERE `id` = ?', [userId], cb, cb);
 }
 
 /**
  * Get the user profile of the specified user
  */
 function getUserProfile(userId, cb) {
-    const connection = getConnection();
-    connection.query('SELECT `first_name`, `last_name`, `email`, `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, results) => {
-        if (err) {
-            return cb(err);
-        }
-
-        if (results.length == 0) {
+    executeQuery('SELECT `first_name`, `last_name`, `email`, `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], cb, (results) => {
+        if (results.length === 0) {
             winston.error('getUserProfile returned nothing for user ID %s', userId);
             return cb({
-                message: 'User profile for user ' + userId + ' not found.'
+                message: 'model: User profile for user ' + userId + ' not found.'
             });
         }
         cb(null, results[0]);
     });
-    connection.end();
 }
 
 /**
  * Creates a new user with the provided info
  */
 function createNewUser(firstName, lastName, email, facebookId, facebookAccessToken, cb) {
-    const connection = getConnection();
-    connection.query('INSERT INTO ' + Table.USERS + ' (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?)', [firstName, lastName, email, facebookId, facebookAccessToken], (err, results) => {
-        if (err) {
-            return cb(err);
-        }
+    executeQuery('INSERT INTO ' + Table.USERS + ' (`first_name`, `last_name`, `email`, `facebook_id`, `facebook_token`) VALUES (?, ?, ?, ?, ?)', [firstName, lastName, email, facebookId, facebookAccessToken], cb, (results) => {
         cb(null, results.insertId);
     });
-    connection.end();
 }
 
 /**
  * Checks if a user has an associated tutor profile
  */
 function isUserTutor(userId, cb) {
-    const connection = getConnection();
-    connection.query('SELECT `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], (err, result) => {
-        if (err) {
-            return cb(err);
-        }
-
+    executeQuery('SELECT `tutor_profile_id` FROM ' + Table.USERS + ' WHERE `id` = ?', [userId], cb, (result) => {
         // First param is null because there was no error. Second param indicates whether a matching tutor profile was found or not.
         if (result[0].tutor_profile_id) {
-            cb(null, true);
+            return cb(null, true);
         } else {
-            cb(null, false);
+            return cb(null, false);
         }
     });
-    connection.end();
 }
 
 function getTutorProfile(userId, cb) {
-    const connection = getConnection();
-    connection.query('SELECT t.* FROM (SELECT * FROM ' + Table.TUTORS + ') AS t INNER JOIN (SELECT * FROM ' + Table.USERS + ' WHERE id = ?) AS u WHERE t.id = u.tutor_profile_id', [userId], (err, results) => {
-        if (err) {
-            return cb(err);
-        }
-
+    executeQuery('SELECT t.* FROM (SELECT * FROM ' + Table.TUTORS + ') AS t INNER JOIN (SELECT * FROM ' + Table.USERS + ' WHERE id = ?) AS u WHERE t.id = u.tutor_profile_id', [userId], cb, (results) => {
         cb(null, results[0]);
     });
 }
@@ -157,7 +129,7 @@ function createTutorProfile(userId, cb) {
     const connection = getConnection();
     connection.beginTransaction(function(err) {
         if (err) {
-            winston.error('Error while starting transaction for createTutorProfile', {
+            winston.error('model: Error while starting transaction for createTutorProfile', {
                 err: err
             });
             throw err;
@@ -168,7 +140,7 @@ function createTutorProfile(userId, cb) {
             if (err) {
                 console.error(err);
                 connection.rollback(() => {
-                    winston.error('Error while inserting into tutors for creating a new tutor profile');
+                    winston.error('model: Error while inserting into tutors for creating a new tutor profile');
                     throw err;
                 });
             }
@@ -178,7 +150,7 @@ function createTutorProfile(userId, cb) {
             connection.query('UPDATE ' + Table.USERS + ' SET `tutor_profile_id` = ? WHERE `id` = ?', [createdTutorProfile, userId], (err, result) => {
                 if (err) {
                     connection.rollback(() => {
-                        winston.error('Error while mapping created tutor profile ID %s to user %s', createdTutorProfile, userId);
+                        winston.error('model: Error while mapping created tutor profile ID %s to user %s', createdTutorProfile, userId);
                         throw err;
                     });
                 }
@@ -187,7 +159,7 @@ function createTutorProfile(userId, cb) {
                 connection.commit((err) => {
                     if (err) {
                         connection.rollback(() => {
-                            winston.error('Error while committing transaction in createTutorProfile');
+                            winston.error('model: Error while committing transaction in createTutorProfile');
                             throw err;
                         })
                     }
@@ -205,15 +177,9 @@ function createTutorProfile(userId, cb) {
  * Returns the existing batches for the provided user.
  */
 function getBatchesForTutor(tutorId, cb) {
-    const connection = getConnection();
-    connection.query('SELECT b.* FROM (SELECT * FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE tutor_id = ?) AS a INNER JOIN (SELECT * FROM ' + Table.BATCHES + ') AS b WHERE a.batch_id = b.id', [tutorId], (err, results) => {
-        if (err) {
-            return cb(err)
-        }
-
+    executeQuery('SELECT b.* FROM (SELECT * FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE tutor_id = ?) AS a INNER JOIN (SELECT * FROM ' + Table.BATCHES + ') AS b WHERE a.batch_id = b.id', [tutorId], cb, (results) => {
         cb(null, results);
     });
-    connection.end();
 }
 
 /**
@@ -223,7 +189,7 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
     const connection = getConnection();
     connection.beginTransaction(function(err) {
         if (err) {
-            winston.error('Error while starting transaction for createBatch', {
+            winston.error('model: Error while starting transaction for createBatch', {
                 err: err
             });
             return cb(err);
@@ -242,7 +208,7 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
                 connection.commit((err) => {
                     if (err) {
                         connection.rollback(() => {
-                            winston.error('Error while committing transaction in createBatch');
+                            winston.error('model: Error while committing transaction in createBatch');
                             throw err;
                         })
                     }
@@ -260,26 +226,19 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
  * Gets the tutor ID of the owner of the provided batch
  */
 function getBatchOwner(batchId, cb) {
-    const connection = getConnection();
-    connection.query('SELECT `tutor_id` FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], (err, result) => {
-        if (err) {
-            winston.error(err);
-            cb(err);
-        }
-
+    executeQuery('SELECT `tutor_id` FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], cb, (result) => {
         if (result.length == 0) {
-            winston.info('Found no owner for batch %s', batchId);
+            winston.info('model: Found no owner for batch %s', batchId);
             cb(null, "");
         } else if (result.length > 1) {
-            winston.error('Found multiple owners for batch %s', batchId);
+            winston.error('model: Found multiple owners for batch %s', batchId);
             cb(null, null);
         } else {
             var tutorId = result[0].tutor_id;
-            winston.info('Found tutorId %s for batch %s', tutorId, batchId);
+            winston.info('model: Found tutorId %s for batch %s', tutorId, batchId);
             cb(null, tutorId);
         }
     });
-    connection.end();
 }
 
 /**
@@ -289,7 +248,7 @@ function deleteBatch(batchId, cb) {
     const connection = getConnection();
     connection.beginTransaction(function(err) {
         if (err) {
-            winston.error('Error starting transaction for deleteBatch', {
+            winston.error('model: Error starting transaction for deleteBatch', {
                 err: err
             });
             return cb(err);
@@ -298,7 +257,7 @@ function deleteBatch(batchId, cb) {
         //Delete the batch from the BATCHES table
         connection.query('DELETE FROM ' + Table.BATCHES + ' WHERE `id` = ?', [batchId], (err) => {
             if (err) {
-                winston.error('Error deleting batch from the "batches" table', {
+                winston.error('model: Error deleting batch from the "batches" table', {
                     err: err
                 });
                 return cb(err);
@@ -307,7 +266,7 @@ function deleteBatch(batchId, cb) {
             //Delete the entry from the tutor-batch map
             connection.query('DELETE FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], (err) => {
                 if (err) {
-                    winston.error('Error deleting batch from tutor-batch-map', {
+                    winston.error('model: Error deleting batch from tutor-batch-map', {
                         err: err
                     });
                     return cb(err);
@@ -317,7 +276,7 @@ function deleteBatch(batchId, cb) {
                 connection.commit((err) => {
                     if (err) {
                         connection.rollback(() => {
-                            winston.error('Error while committing transaction in deleteBatch');
+                            winston.error('model: Error while committing transaction in deleteBatch');
                             throw err;
                         })
                     }
@@ -336,7 +295,7 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
     const connection = getConnection();
     connection.beginTransaction(function(err) {
         if (err) {
-            winston.error('Error starting transaction for addStudentToBatch', {
+            winston.error('model: Error starting transaction for addStudentToBatch', {
                 err: err
             });
             return cb(err);
@@ -346,7 +305,7 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
         winston.info('model: Creating new entry in STUDENTS table...')
         connection.query('INSERT INTO ' + Table.STUDENTS + ' (`first_name`, `last_name`, `phone`, `email`, `verified`) VALUES (?, ?, ?, ?, 0)', [firstName, lastName, phone, email], (err, result) => {
             if (err) {
-                winston.error('Error inserting into the STUDENTS table', {
+                winston.error('model: Error inserting into the STUDENTS table', {
                     err: err
                 });
                 return cb(err);
@@ -357,7 +316,7 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
             winston.info('model: Creating mapping entry for batch %s, student %s...', batchId, studentId);
             connection.query('INSERT INTO ' + Table.BATCH_STUDENT_MAP + ' (`batch_id`, `student_id`) VALUES (?, ?)', [batchId, studentId], (err) => {
                 if (err) {
-                    winston.error('Error inserting into BATCH_STUDENT_MAP', {
+                    winston.error('model: Error inserting into BATCH_STUDENT_MAP', {
                         err: err
                     });
                     return cb(err);
@@ -367,7 +326,7 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
                 connection.commit((err) => {
                     if (err) {
                         connection.rollback(() => {
-                            winston.error('Error while committing transaction in addStudentToBatch');
+                            winston.error('model: Error while committing transaction in addStudentToBatch');
                             throw err;
                         })
                     }
@@ -386,15 +345,9 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
  * @return {[type]}         [description]
  */
 function getStudentsInBatch(batchId, cb) {
-    const connection = getConnection();
-    connection.query('SELECT b.* FROM (SELECT `student_id` FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ?) AS a INNER JOIN (SELECT * FROM ' + Table.STUDENTS + ') AS b WHERE a.student_id = b.id', [batchId], (err, results) => {
-        if (err) {
-            return cb(err)
-        }
-
+    executeQuery('SELECT b.* FROM (SELECT `student_id` FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ?) AS a INNER JOIN (SELECT * FROM ' + Table.STUDENTS + ') AS b WHERE a.student_id = b.id', [batchId], cb, (results) => {
         cb(null, results);
     });
-    connection.end();
 }
 
 module.exports = {
