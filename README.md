@@ -1,4 +1,4 @@
-# tutor-buddy [![Build Status](https://travis-ci.org/pritin-tyagaraj/tutor-buddy.svg?branch=master)](https://travis-ci.org/pritin-tyagaraj/tutor-buddy) [![Code Climate](https://lima.codeclimate.com/github/pritin-tyagaraj/tutor-buddy/badges/gpa.svg)](https://lima.codeclimate.com/github/pritin-tyagaraj/tutor-buddy) [![codecov](https://codecov.io/gh/pritin-tyagaraj/tutor-buddy/branch/master/graph/badge.svg)](https://codecov.io/gh/pritin-tyagaraj/tutor-buddy)
+# tutor-buddy [![Build Status](https://travis-ci.org/pritin-tyagaraj/tutor-buddy.svg?branch=master)](https://travis-ci.org/pritin-tyagaraj/tutor-buddy) [![Code Climate](https://lima.codeclimate.com/github/pritin-tyagaraj/tutor-buddy/badges/gpa.svg)](https://lima.codeclimate.com/github/pritin-tyagaraj/tutor-buddy) [![codecov](https://codecov.io/gh/pritin-tyagaraj/tutor-buddy/branch/master/graph/badge.svg)](https://codecov.io/gh/pritin-tyagaraj/tutor-buddy) [![NSP Status](https://nodesecurity.io/orgs/logicbombin/projects/1609a966-78bb-4389-898d-2415957c6f6a/badge)](https://nodesecurity.io/orgs/logicbombin/projects/1609a966-78bb-4389-898d-2415957c6f6a)
 
 ![Tutor Budy Logo](tutor-buddy.png?raw=true "Tutor Buddy")
 
