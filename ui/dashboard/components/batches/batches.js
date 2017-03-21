@@ -116,7 +116,7 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
                 $scope.batches = data;
                 $scope.isLoading = false;
             });
-        };
+        }
 
         function refreshStudentList(batchId, $scope, tbBatchService) {
             // Set 'isLoading' property within the particular batch to TRUE, so that we show progress bar for only this batch
@@ -136,5 +136,5 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
                     }
                 });
             });
-        };
+        }
     });

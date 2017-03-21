@@ -17,9 +17,9 @@ angular.module('overview', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'apiConnector'
     .controller('overviewController', function($scope, tbUserService) {
         $scope.createTutorProfile = function() {
             tbUserService.createTutorProfile().then(function() {
-                alert('Tutor Profile Created');
+                alert('Tutor Profile Created'); //eslint-disable-line no-alert
             }, function(data, status) {
-                alert('Server says... \n' + data.statusText + ': ' + data.data.error);
+                alert('Server says... \n' + data.statusText + ': ' + data.data.error); //eslint-disable-line no-alert
             });
         };
     });
