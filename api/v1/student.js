@@ -4,6 +4,9 @@ const winston = require('winston');
 const user = require('./user')
 
 module.exports = {
+    /**
+     * Add a student to a batch
+     */
     addStudentToBatch: function(req, res, next) {
         // Get the 'variables' that we need to work with
         var userId = req.user.id;
@@ -47,6 +50,46 @@ module.exports = {
         });
     },
 
+    /**
+     * Remove a student from a batch
+     */
+    removeStudentFromBatch: function(req, res, next) {
+        //Get the variables to work with
+        var userId = req.user.id;
+        var batchId = req.params.batchId;
+        var studentId = req.params.studentId;
+
+        //Is the user allowed to remove a student from a batch
+        model.batch.getBatchOwner(batchId, function(err, owner) {
+            if (err) {
+                winston.error('An error occurred in removeStudentFromBatch', {
+                    err: err
+                });
+                return res.json(500);
+            }
+
+            if (owner === userId) {
+                winston.info('User %s is allowed to remove students from batch %s. Proceeding...', userId, batchId);
+                model.student.removeStudentFromBatch(batchId, studentId, (err) => {
+                    if (err) {
+                        winston.error('An error occurred in removeStudentFromBatch', {
+                            err: err
+                        });
+                        res.json(500, {
+                            message: 'An error occurred while trying to remove student ' + studentId + ' from batch ' + batchId
+                        });
+                    }
+
+                    //Done!
+                    res.send(200);
+                });
+            }
+        });
+    },
+
+    /**
+     * Get a list of students for a batch
+     */
     getStudentsForBatch: function(req, res, next) {
         //Get the variables we'll be working with
         var userId = req.user.id;

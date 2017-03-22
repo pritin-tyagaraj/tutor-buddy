@@ -70,6 +70,7 @@ server.get('/api/v1/batches', require('./api/v1/batch').getBatchesForUser);
 server.del('/api/v1/batch/:batchId', require('./api/v1/batch').deleteBatch);
 server.get('/api/v1/batch/:batchId/students', require('./api/v1/student').getStudentsForBatch);
 server.post('/api/v1/batch/:batchId/students', require('./api/v1/student').addStudentToBatch);
+server.del('/api/v1/batch/:batchId/student/:studentId', require('./api/v1/student').removeStudentFromBatch);
 
 // Google Cloud Health Check paths
 server.get('/_ah/vm_health', (req, res) => {

@@ -68,14 +68,18 @@ function readByFacebookId(id, cb) {
  * Creates a new session in the DB for a given user
  */
 function createNewSession(userId, sessionId, cb) {
-    executeQuery('UPDATE ' + Table.USERS + ' SET `session_id` = ? WHERE `id` = ?', [sessionId, userId], cb, cb);
+    executeQuery('UPDATE ' + Table.USERS + ' SET `session_id` = ? WHERE `id` = ?', [sessionId, userId], cb, () => {
+        cb();
+    });
 }
 
 /**
  * Deletes a given user's session ID from the database
  */
 function terminateSession(userId, cb) {
-    executeQuery('UPDATE ' + Table.USERS + ' SET `session_id` = NULL WHERE `id` = ?', [userId], cb, cb);
+    executeQuery('UPDATE ' + Table.USERS + ' SET `session_id` = NULL WHERE `id` = ?', [userId], cb, () => {
+        cb();
+    });
 }
 
 /**
@@ -341,12 +345,19 @@ function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
 
 /**
  * Fetch a list of students belonging to the provided batch ID
- * @param  {[type]} batchId [description]
- * @return {[type]}         [description]
  */
 function getStudentsInBatch(batchId, cb) {
     executeQuery('SELECT b.* FROM (SELECT `student_id` FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ?) AS a INNER JOIN (SELECT * FROM ' + Table.STUDENTS + ') AS b WHERE a.student_id = b.id', [batchId], cb, (results) => {
         cb(null, results);
+    });
+}
+
+/**
+ * Removes the specified student from the specified batch
+ */
+function removeStudentFromBatch(batchId, studentId, cb) {
+    executeQuery('DELETE FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ? AND `student_id` = ?', [batchId, studentId], cb, () => {
+        cb();
     });
 }
 
@@ -371,6 +382,7 @@ module.exports = {
     },
     student: {
         addStudentToBatch: addStudentToBatch,
-        getStudentsInBatch: getStudentsInBatch
+        getStudentsInBatch: getStudentsInBatch,
+        removeStudentFromBatch: removeStudentFromBatch
     }
 };

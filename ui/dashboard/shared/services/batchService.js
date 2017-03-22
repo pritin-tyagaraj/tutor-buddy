@@ -54,6 +54,19 @@ apiConnector.factory('tbBatchService', function($http, $q) {
         },
 
         /**
+         * Removes a student from a batch
+         */
+        removeStudent: function(batchId, studentId) {
+            var deferred = $q.defer();
+            $http.delete('/api/v1/batch/' + batchId + '/student/' + studentId).then(function() {
+                deferred.resolve();
+            }, function(data, status, headers, config) {
+                deferred.reject();
+            });
+            return deferred.promise;
+        },
+
+        /**
          * Returns all students in a particular batch
          */
         getStudentsForBatch: function(batchId) {

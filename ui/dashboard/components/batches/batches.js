@@ -10,7 +10,7 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
     })
 
     // Controllers
-    .controller('batchesController', function($scope, tbBatchService, tbUserService, $mdDialog) {
+    .controller('batchesController', function($scope, $location, tbBatchService, tbUserService, $mdDialog) {
         // Load the list of batches
         refreshBatchList($scope, tbBatchService);
 
@@ -34,24 +34,9 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
                 });
         };
 
-        //Handle deletion of batches
-        $scope.deleteBatch = function(ev, batch) {
-            var confirmDialog = $mdDialog.confirm()
-                .title('Delete Batch')
-                .textContent('The batch \'' + batch.name + '\' will permanently be deleted. Are you sure you want to proceed?')
-                .ariaLabel('Delete Batch ' + batch.name)
-                .targetEvent(ev)
-                .ok('Yes, delete this batch')
-                .cancel('Cancel');
-
-            $mdDialog.show(confirmDialog).then(function() {
-                // User confirmed deletion
-                $scope.isLoading = true;
-                tbBatchService.deleteBatch(batch.id).then(function() {
-                    //Batch has been deleted. Refresh the list of batches now
-                    refreshBatchList($scope, tbBatchService);
-                });
-            });
+        // Navigate to batch details page
+        $scope.showBatchDetails = function(batch) {
+            $location.path('/batch/' + batch.id);
         };
 
         // Handle addition of students
