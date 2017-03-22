@@ -1,8 +1,7 @@
-var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'overview', 'payments', 'batches', 'apiConnector']);
+var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'overview', 'payments', 'batches', 'batchDetails', 'apiConnector']);
 welcomeApp.controller('appController', function($scope, $timeout, $location, $log, $interval, $mdSidenav, $log, $rootScope, $route, $window, tbUserService) {
     var adsInitialized = false;
 
-    $scope.message = 'This message is in the scope!';
     $scope.appTitle = 'Tutor Buddy';
     $scope.viewTitle = '';
     $scope.userName = '...';

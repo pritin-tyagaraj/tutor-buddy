@@ -1,0 +1,72 @@
+<div ng-cloak>
+  <md-content>
+    <md-tabs md-selected="selectedTabIndex" md-dynamic-height md-border-bottom>
+        <!-- GENERAL -->
+        <md-tab label="General">
+        <md-content class="md-padding">
+            <!-- Action buttons -->
+            <div class="md-toolbar-tools">
+                <span flex></span>
+                <md-button class="md-warn" ng-click="deleteBatch(ev)">Delete Batch</md-button>
+            </div>
+
+            <h1 class="md-display-2">General</h1>
+            <p>General info (editable) about this batch</p>
+        </md-content>
+      </md-tab>
+
+      <!-- STUDENTS -->
+      <md-tab label="Students">
+        <md-content class="md-padding">
+            <!-- Action buttons -->
+            <div class="md-toolbar-tools">
+                <span flex></span>
+                <md-button md-no-ink class="md-raised md-primary" ng-click="addStudent($event)">Add Student</md-button>
+            </div>
+
+            <!-- Progress bar -->
+            <md-progress-linear md-mode="indeterminate" ng-show="loadingStudents"></md-progress-linear>
+
+            <!-- List -->
+            <h4 class="tbNoDataText" ng-if="!loadingStudents && (!students || students.length == 0)">Once you add some students to this batch, you will see them listed here.</h4>
+            <md-list class="md-whiteframe-1dp" ng-if="students && students.length > 0">
+               <md-list-item ng-repeat="student in students" class="md-2-line">
+                   <img ng-src="{{todos[0].face}}?20" class="md-avatar" alt="{{todos[0].who}}" />
+                   <div class="md-list-item-text">
+                       <h3>{{student.first_name}} {{student.last_name}}</h3>
+                       <p>{{student.email}}</p>
+                   </div>
+                   <md-button class="md-secondary md-icon-button" ng-click="removeStudent($event, student)" aria-label="remove">
+                       <ng-md-icon icon="remove_circle" style="fill:maroon;" size="20"></ng-md-icon>
+                   </md-button>
+                   <md-button class="md-secondary md-icon-button" ng-click="doSecondaryAction($event)" ng-if="student.email" aria-label="email">
+                       <ng-md-icon icon="email" style="fill:grey;" size="20"></ng-md-icon>
+                   </md-button>
+                   <md-button class="md-secondary md-icon-button" ng-click="doSecondaryAction($event)" ng-if="student.phone" aria-label="call">
+                       <ng-md-icon icon="call" style="fill:grey;" size="20"></ng-md-icon>
+                   </md-button>
+               </md-list-item>
+            </md-list>
+        </md-content>
+      </md-tab>
+      <md-tab label="Assignments">
+        <md-content class="md-padding">
+          <h1 class="md-display-2">Assignments</h1>
+          <p>Details about assignments shared with this batch</p>
+        </md-content>
+      </md-tab>
+      <md-tab label="Attendance">
+        <md-content class="md-padding">
+          <h1 class="md-display-2">Attendance</h1>
+          <p>Details about attendance of students in this batch</p>
+        </md-content>
+      </md-tab>
+      <md-tab label="Payments">
+        <md-content class="md-padding">
+          <h1 class="md-display-2">Payments</h1>
+          <p>Details about payments in this batch</p>
+        </md-content>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+</div>
