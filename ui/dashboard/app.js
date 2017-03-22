@@ -1,5 +1,7 @@
 var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'overview', 'payments', 'batches', 'apiConnector']);
-welcomeApp.controller('appController', function($scope, $timeout, $location, $mdSidenav, $log, $rootScope, $route, $window, tbUserService) {
+welcomeApp.controller('appController', function($scope, $timeout, $location, $log, $interval, $mdSidenav, $log, $rootScope, $route, $window, tbUserService) {
+    var adsInitialized = false;
+
     $scope.message = 'This message is in the scope!';
     $scope.appTitle = 'Tutor Buddy';
     $scope.viewTitle = '';
@@ -55,6 +57,37 @@ welcomeApp.controller('appController', function($scope, $timeout, $location, $md
     tbUserService.getUserProfile().then(function(data) {
         $scope.userName = data.first_name + ' ' + data.last_name;
     });
+
+    // Init Google ads
+    initAds();
+
+    // ----- Private methods -----
+    function initAds() {
+        // We can init the ad only while the sidenav is open. So keep waiting for that to happen. Once we place the ad, we can forget about it.
+        $mdSidenav('left', true).then(function(leftNav) {
+            var interval = $interval(function() {
+                if (leftNav.isOpen() || leftNav.isLockedOpen()) {
+                    //Add the UI
+                    var adContainer = angular.element(document.querySelector('#googleAdContainer'));
+                    adContainer.append(
+                        '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8055457279999981" data-ad-slot="6056269208" data-ad-format="auto"></ins>'
+                    );
+
+                    //Invoke the script
+                    try {
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    } catch (err) {
+                        return;
+                    }
+
+                    //Done!
+                    $log.info('Ads loaded.');
+                    adsInitialized = true;
+                    $interval.cancel(interval);
+                }
+            }, 2000);
+        });
+    }
 });
 
 welcomeApp.controller('rightController', function($scope, $timeout, $mdSidenav, $log) {
