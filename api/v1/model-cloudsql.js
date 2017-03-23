@@ -15,7 +15,7 @@ var Table = {
 };
 
 var StoredProcedure = {
-    deleteBatch: (process.env.mode === 'TEST') ? 'deleteBatch-test' : '`deleteBatch`',
+    deleteBatch: (process.env.mode === 'TEST') ? '`deleteBatch-test`' : '`deleteBatch`',
 };
 
 /**
