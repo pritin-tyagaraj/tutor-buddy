@@ -14,6 +14,10 @@ var Table = {
     BATCH_STUDENT_MAP: (process.env.mode === 'TEST') ? '`batch_student_map-test`' : '`batch_student_map`'
 };
 
+var StoredProcedure = {
+    deleteBatch: (process.env.mode === 'TEST') ? '`deleteBatch-test`' : '`deleteBatch`',
+};
+
 /**
  * Helper method to return a DB connection
  */
@@ -250,45 +254,8 @@ function getBatchOwner(batchId, cb) {
  */
 function deleteBatch(batchId, cb) {
     const connection = getConnection();
-    connection.beginTransaction(function(err) {
-        if (err) {
-            winston.error('model: Error starting transaction for deleteBatch', {
-                err: err
-            });
-            return cb(err);
-        }
-
-        //Delete the batch from the BATCHES table
-        connection.query('DELETE FROM ' + Table.BATCHES + ' WHERE `id` = ?', [batchId], (err) => {
-            if (err) {
-                winston.error('model: Error deleting batch from the "batches" table', {
-                    err: err
-                });
-                return cb(err);
-            }
-
-            //Delete the entry from the tutor-batch map
-            connection.query('DELETE FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], (err) => {
-                if (err) {
-                    winston.error('model: Error deleting batch from tutor-batch-map', {
-                        err: err
-                    });
-                    return cb(err);
-                }
-
-                // Commit the transaction
-                connection.commit((err) => {
-                    if (err) {
-                        connection.rollback(() => {
-                            winston.error('model: Error while committing transaction in deleteBatch');
-                            throw err;
-                        })
-                    }
-                    connection.end();
-                    cb(null);
-                });
-            });
-        });
+    executeQuery('CALL `tutor-buddy`.' + StoredProcedure.deleteBatch + '(?)', [batchId], cb, () => {
+        cb();
     });
 }
 
