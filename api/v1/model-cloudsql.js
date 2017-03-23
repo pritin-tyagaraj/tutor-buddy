@@ -16,6 +16,7 @@ var Table = {
 
 var StoredProcedure = {
     deleteBatch: (process.env.mode === 'TEST') ? '`deleteBatch-test`' : '`deleteBatch`',
+    addStudentToBatch: (process.env.mode === 'TEST') ? '`addStudentToBatch-test`' : '`addStudentToBatch`'
 };
 
 /**
@@ -25,7 +26,8 @@ function getConnection() {
     const options = {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
-        database: 'tutor-buddy'
+        database: 'tutor-buddy',
+        multipleStatements: true
     };
 
     if ((process.env.MODE !== 'TEST') && (process.env.MODE !== 'DEV')) {
@@ -40,7 +42,7 @@ function getConnection() {
  */
 function executeQuery(queryString, queryParams, errorCb, successCb) {
     const connection = getConnection();
-    connection.query(queryString, queryParams, (err, results) => {
+    return connection.query(queryString, queryParams, (err, results) => {
         if (err) {
             winston.error('model: Error while executing query', {
                 err: err
@@ -253,7 +255,6 @@ function getBatchOwner(batchId, cb) {
  * Deletes the provided batch. Update both the 'batches' table and the 'tutor-batch-map' table
  */
 function deleteBatch(batchId, cb) {
-    const connection = getConnection();
     executeQuery('CALL `tutor-buddy`.' + StoredProcedure.deleteBatch + '(?)', [batchId], cb, () => {
         cb();
     });
@@ -263,50 +264,9 @@ function deleteBatch(batchId, cb) {
  * Adds a student to a batch (with verified=false) and sends out an email to the student for verification. Also updates the student-batch mapping table
  */
 function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
-    const connection = getConnection();
-    connection.beginTransaction(function(err) {
-        if (err) {
-            winston.error('model: Error starting transaction for addStudentToBatch', {
-                err: err
-            });
-            return cb(err);
-        }
-
-        // Insert a row in the STUDENTS table
-        winston.info('model: Creating new entry in STUDENTS table...')
-        connection.query('INSERT INTO ' + Table.STUDENTS + ' (`first_name`, `last_name`, `phone`, `email`, `verified`) VALUES (?, ?, ?, ?, 0)', [firstName, lastName, phone, email], (err, result) => {
-            if (err) {
-                winston.error('model: Error inserting into the STUDENTS table', {
-                    err: err
-                });
-                return cb(err);
-            }
-
-            // Create an entry in the STUDENT-BATCH mapping table
-            var studentId = result.insertId;
-            winston.info('model: Creating mapping entry for batch %s, student %s...', batchId, studentId);
-            connection.query('INSERT INTO ' + Table.BATCH_STUDENT_MAP + ' (`batch_id`, `student_id`) VALUES (?, ?)', [batchId, studentId], (err) => {
-                if (err) {
-                    winston.error('model: Error inserting into BATCH_STUDENT_MAP', {
-                        err: err
-                    });
-                    return cb(err);
-                }
-
-                // Commit the transaction
-                connection.commit((err) => {
-                    if (err) {
-                        connection.rollback(() => {
-                            winston.error('model: Error while committing transaction in addStudentToBatch');
-                            throw err;
-                        })
-                    }
-                    connection.end();
-                    cb(null, studentId);
-                });
-
-            });
-        });
+    executeQuery('SET @createdStudentId = 0; CALL `tutor-buddy`.' + StoredProcedure.addStudentToBatch + '(?, ?, ?, ?, ?, @createdStudentId); SELECT @createdStudentId', [batchId, firstName, lastName, phone, email], cb, (result) => {
+        var createdStudentId = result[2][0]['@createdStudentId']; //'2|0' because we want the first row of the result of the 3rd (zero-based) statement
+        cb(null, createdStudentId);
     });
 }
 

@@ -38,7 +38,7 @@ var aTestSetupQueries = [
     'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,1)',
     'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,2)', // This is to test deleteBatch
 
-    // Stored Procedure
+    // Stored Procedure - deleteBatch
     `
     USE \`tutor-buddy\`;
     DROP procedure IF EXISTS \`deleteBatch-test\`;
@@ -86,7 +86,24 @@ var aTestSetupQueries = [
     		-- Delete the batch
             DELETE FROM \`batches-test\` WHERE id = batchId;
         COMMIT;
-    END;
+    END
+    `,
+
+    // Stored Procedure - addStudentToBatch
+    `
+    USE \`tutor-buddy\`;
+    DROP procedure IF EXISTS \`addStudentToBatch-test\`;
+    CREATE PROCEDURE \`addStudentToBatch-test\`(IN batchId INT(11), IN firstName VARCHAR(255), IN lastName VARCHAR(255), IN phone VARCHAR(255), IN email VARCHAR(255), OUT createdStudentId INT(11))
+BEGIN
+	START TRANSACTION;
+    -- Create a new student entry
+    INSERT INTO \`students-test\` (first_name, last_name, phone, email, verified) VALUES (firstName, lastName, phone, email, 0);
+    SET createdStudentId = LAST_INSERT_ID();
+
+    -- Create a new mapping entry to map batch and student.
+    INSERT INTO \`batch_student_map-test\` (batch_id, student_id) VALUES (batchId, LAST_INSERT_ID());
+    COMMIT;
+END
     `
 ];
 var options = {
