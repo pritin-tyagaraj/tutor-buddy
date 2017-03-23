@@ -36,7 +36,58 @@ var aTestSetupQueries = [
     'INSERT INTO `batches-test` (`id`) VALUES (2)', //This is to test deleteBatch
     'INSERT INTO `tutors-test` (`id`) VALUES (1)',
     'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,1)',
-    'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,2)' // This is to test deleteBatch
+    'INSERT INTO `tutor_batch_map-test` (`tutor_id`, `batch_id`) VALUES (1,2)', // This is to test deleteBatch
+
+    // Stored Procedure
+    `
+    USE \`tutor-buddy\`;
+    DROP procedure IF EXISTS \`deleteBatch-test\`;
+    CREATE PROCEDURE \`deleteBatch-test\`(IN batchId INT(11) )
+    BEGIN
+    	DECLARE eachBatchStudent INT;
+        DECLARE studentIteratorDone INT DEFAULT FALSE;
+
+        -- Find all students that belong to the batch being deleted and belong to no other batch. Such students need to be removed from the 'students' table as well as these records are no longer referenced anywhere else.
+    	DECLARE cursor_studentsNotInOtherBatches CURSOR FOR
+    		SELECT a.student_id FROM
+    			(SELECT student_id
+    			FROM \`batch_student_map-test\`
+    			GROUP BY student_id
+    			HAVING (COUNT(DISTINCT batch_id) = 1)) AS a
+
+    			INNER JOIN
+
+    			(SELECT student_id
+    			FROM \`batch_student_map-test\`
+    			WHERE batch_id = batchId) AS b
+
+    			WHERE a.student_id = b.student_id;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET studentIteratorDone = TRUE;
+
+
+    	START TRANSACTION;
+    		-- For each student in this batch, check if the student belongs to any other batch. If no, then delete the student from the 'students' table.
+            OPEN cursor_studentsNotInOtherBatches;
+            batchStudentsLoop: LOOP
+    			FETCH cursor_studentsNotInOtherBatches INTO eachBatchStudent;
+                IF studentIteratorDone THEN
+    				LEAVE batchStudentsLoop;
+    			END IF;
+
+                DELETE FROM \`students-test\` WHERE id = eachBatchStudent;
+            END LOOP;
+
+            -- Delete all batch->student mappings for this batch
+    		DELETE FROM \`batch_student_map-test\` WHERE batch_id = batchId;
+
+            -- Delete the tutor->batch mappings for this batch
+            DELETE FROM \`tutor_batch_map-test\` WHERE batch_id = batchId;
+
+    		-- Delete the batch
+            DELETE FROM \`batches-test\` WHERE id = batchId;
+        COMMIT;
+    END;
+    `
 ];
 var options = {
     user: process.env.DB_USER,
