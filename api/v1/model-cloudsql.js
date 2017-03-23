@@ -14,6 +14,10 @@ var Table = {
     BATCH_STUDENT_MAP: (process.env.mode === 'TEST') ? '`batch_student_map-test`' : '`batch_student_map`'
 };
 
+var StoredProcedure = {
+    deleteBatch: (process.env.mode === 'TEST') ? 'deleteBatch-test' : '`deleteBatch`',
+};
+
 /**
  * Helper method to return a DB connection
  */
@@ -250,7 +254,7 @@ function getBatchOwner(batchId, cb) {
  */
 function deleteBatch(batchId, cb) {
     const connection = getConnection();
-    executeQuery('CALL `tutor-buddy`.deleteBatch(?)', [batchId], cb, () => {
+    executeQuery('CALL `tutor-buddy`.' + StoredProcedure.deleteBatch + '(?)', [batchId], cb, () => {
         cb();
     });
 }
