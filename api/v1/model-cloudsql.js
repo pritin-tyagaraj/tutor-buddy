@@ -10,10 +10,12 @@ var Table = {
     TUTORS: (process.env.mode === 'TEST') ? '`tutors-test`' : '`tutors`',
     STUDENTS: (process.env.mode === 'TEST') ? '`students-test`' : '`students`',
     BATCHES: (process.env.mode === 'TEST') ? '`batches-test`' : '`batches`',
+    PAYMENTS: (process.env.mode === 'TEST') ? '`payments-test`' : '`payments`',
     TUTOR_BATCH_MAP: (process.env.mode === 'TEST') ? '`tutor_batch_map-test`' : '`tutor_batch_map`',
     BATCH_STUDENT_MAP: (process.env.mode === 'TEST') ? '`batch_student_map-test`' : '`batch_student_map`'
 };
 
+// Names of stored procedures
 var StoredProcedure = {
     deleteBatch: (process.env.mode === 'TEST') ? '`deleteBatch-test`' : '`deleteBatch`',
     addStudentToBatch: (process.env.mode === 'TEST') ? '`addStudentToBatch-test`' : '`addStudentToBatch`'
@@ -148,7 +150,6 @@ function createTutorProfile(userId, cb) {
         // Create a new tutor profile
         connection.query('INSERT INTO ' + Table.TUTORS + ' VALUES()', (err, result) => {
             if (err) {
-                console.error(err);
                 connection.rollback(() => {
                     winston.error('model: Error while inserting into tutors for creating a new tutor profile');
                     throw err;
@@ -261,6 +262,16 @@ function deleteBatch(batchId, cb) {
 }
 
 /**
+ * Checks if the given student belongs to the given batch. If yes, calls the success callback with the result as 'true'
+ */
+function hasStudent(batchId, studentId, cb) {
+    executeQuery('SELECT COUNT(*) FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ? AND `student_id` = ?', [batchId, studentId], cb, (result) => {
+        var value = (result[0]['COUNT(*)'] === 0) ? false : true;
+        cb(null, value);
+    });
+}
+
+/**
  * Adds a student to a batch (with verified=false) and sends out an email to the student for verification. Also updates the student-batch mapping table
  */
 function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
@@ -288,6 +299,18 @@ function removeStudentFromBatch(batchId, studentId, cb) {
     });
 }
 
+/**
+ * Records a payment by a student->tutor
+ */
+function recordPayment(studentId, batchId, paymentMode, paymentAmount, paymentCurrency, paymentTime, tutorComment, cb) {
+    executeQuery('INSERT INTO ' + Table.PAYMENTS + ' (`student_id`, `batch_id`, `mode`, `amount`, `currency`, `time`, `tutor_comment`) VALUES(?, ?, ?, ?, ?, ?, ?)', [studentId, batchId, paymentMode, paymentAmount,
+        paymentCurrency,
+        paymentTime, tutorComment
+    ], cb, () => {
+        cb();
+    });
+}
+
 module.exports = {
     user: {
         getUserProfile: getUserProfile,
@@ -305,11 +328,15 @@ module.exports = {
         getBatchesForTutor: getBatchesForTutor,
         createBatch: createBatch,
         getBatchOwner: getBatchOwner,
-        deleteBatch: deleteBatch
+        deleteBatch: deleteBatch,
+        hasStudent: hasStudent
     },
     student: {
         addStudentToBatch: addStudentToBatch,
         getStudentsInBatch: getStudentsInBatch,
         removeStudentFromBatch: removeStudentFromBatch
+    },
+    payment: {
+        recordPayment: recordPayment
     }
 };

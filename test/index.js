@@ -15,6 +15,7 @@ var server = supertest.agent('http://localhost:8080');
 var aTestSetupQueries = [
     // Drop test tables
     'DROP TABLE IF EXISTS `users-test`',
+    'DROP TABLE IF EXISTS `payments-test`',
     'DROP TABLE IF EXISTS `tutors-test`',
     'DROP TABLE IF EXISTS `tutor_batch_map-test`',
     'DROP TABLE IF EXISTS `batch_student_map-test`',
@@ -28,6 +29,7 @@ var aTestSetupQueries = [
     'CREATE TABLE `batch_student_map-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `batch_id` int(11) DEFAULT NULL, `student_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `batches-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `name` varchar(255) DEFAULT NULL, `subject` varchar(255) DEFAULT NULL, `address_text` text, `address_lat` float DEFAULT NULL, `address_lng` float DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `students-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `first_name` varchar(255) DEFAULT NULL, `last_name` varchar(255) DEFAULT NULL, `phone` varchar(255) DEFAULT NULL, `email` varchar(255) DEFAULT NULL, `verified` tinyint(1) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
+    'CREATE TABLE `payments-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `student_id` int(11) unsigned DEFAULT NULL, `batch_id` int(11) unsigned DEFAULT NULL, `mode` varchar(255) DEFAULT NULL, `amount` decimal(13,4) DEFAULT NULL, `currency` varchar(5) DEFAULT NULL, `time` datetime DEFAULT NULL, `student_comment` text, `tutor_comment` text, `system_comment` text, PRIMARY KEY (`id`), KEY `fk_batch_id_idx` (`batch_id`), KEY `fk_student_id_idx` (`student_id`), CONSTRAINT `fk_payments-test_batch_id` FOREIGN KEY (`batch_id`) REFERENCES `batches-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION, CONSTRAINT `fk_payments-test_student_id` FOREIGN KEY (`student_id`) REFERENCES `students-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE=InnoDB DEFAULT CHARSET=utf8',
 
     // Add the required test data
     'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`, `tutor_profile_id`) VALUES (\'1\', \'TestTutorUserFirstName\', \'TestTutorUserLastName\', \'pritin.cool+tutor@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0\', \'1\')',
@@ -356,4 +358,71 @@ describe('/batch API', function() {
                 done();
             });
     });
+});
+
+describe('Payment API', function(done) {
+    it('POST /api/v1/batch/:batchId/student/:studentId/payments - Tutor manually records a payment for a batch', function(done) {
+        this.timeout(8000);
+        // Create a student first
+        server.post('/api/v1/batch/1/students')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .send({
+                first_name: "Student First Name",
+                last_name: "Student Last Name"
+            })
+            .end(function(err, res) {
+                if (err) throw err;
+                server.post('/api/v1/batch/1/student/2/payments')
+                    .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+                    .send({
+                        amount: 300,
+                        currency: "INR",
+                        time: "9999-12-31 23:59:59",
+                        tutor_comment: "Tutor Comment"
+                    })
+                    .expect(201)
+                    .end(function(err, res) {
+                        if (err) throw err;
+                        done();
+                    });
+            });
+
+    });
+
+    it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch does not exist', function(done) {
+        this.timeout(5000);
+        server.post('/api/v1/batch/999/student/1/payments')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .send({
+                amount: 300,
+                currency: "INR",
+                time: "9999-12-31 23:59:59",
+                tutor_comment: "Tutor Comment"
+            })
+            .expect(400)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the student does not exist', function(done) {
+        this.timeout(5000);
+        server.post('/api/v1/batch/1/student/900/payments')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .send({
+                amount: 300,
+                currency: "INR",
+                time: "9999-12-31 23:59:59",
+                tutor_comment: "Tutor Comment"
+            })
+            .expect(400)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch exists but isn\'t owened by the user');
+    it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch and student exist, but the student belongs to a different batch');
 });
