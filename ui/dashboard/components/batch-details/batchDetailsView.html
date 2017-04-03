@@ -21,7 +21,7 @@
             <!-- Action buttons -->
             <div class="md-toolbar-tools">
                 <span flex></span>
-                <md-button md-no-ink class="md-raised md-primary" ng-click="addStudent($event)">Add Student</md-button>
+                <md-button md-no-ink class="md-raised md-primary" ng-disabled="loadingStudents" ng-click="addStudent($event)">Add Student</md-button>
             </div>
 
             <!-- Progress bar -->
@@ -63,8 +63,14 @@
       </md-tab>
       <md-tab label="Payments">
         <md-content class="md-padding">
-          <h1 class="md-display-2">Payments</h1>
-          <p>Details about payments in this batch</p>
+            <!-- Action buttons -->
+            <div class="md-toolbar-tools">
+                <span flex></span>
+                <md-button md-no-ink class="md-raised md-primary" ng-disabled="loadingPayments" ng-click="recordPayment($event)">Record Payment</md-button>
+            </div>
+
+            <!-- Progress bar -->
+            <md-progress-linear md-mode="indeterminate" ng-show="loadingPayments"></md-progress-linear>
         </md-content>
       </md-tab>
     </md-tabs>

@@ -13,7 +13,7 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
         });
     })
 
-    .controller('batchDetailsController', function($scope, $location, tbBatchService, tbUserService, $mdDialog, $routeParams) {
+    .controller('batchDetailsController', function($scope, $location, tbBatchService, tbUserService, tbPaymentService, $mdDialog, $routeParams) {
         // Which batch are we showing details for?
         var batchId = $routeParams.batchId;
 
@@ -79,6 +79,44 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
                 tbBatchService.removeStudent(batchId, student.id).then(function() {
                     refreshStudentList($scope, tbBatchService, batchId);
                 });
+            });
+        };
+
+        // Handle manual recording of payment
+        $scope.recordPayment = function(ev) {
+            //Load the list of students in this batch to show within the dialog
+            $scope.loadingPayments = true;
+            tbBatchService.getStudentsForBatch(batchId).then(function(students) {
+                // Now show the record payment dialog
+                $scope.loadingPayments = false;
+                $mdDialog.show({
+                        locals: {
+                            students: students
+                        },
+                        controller: ['$scope', 'students', function($scope, students) {
+                            $scope.batchStudents = students;
+                            $scope.cancel = function() {
+                                $mdDialog.cancel();
+                            };
+                            $scope.done = function() {
+                                $mdDialog.hide($scope);
+                            };
+                        }],
+                        templateUrl: 'dashboard/components/batch-details/recordPaymentDialog.template.html',
+                        targetEvent: ev,
+                        clickOutsideToClose: true,
+                        fullscreen: false
+                    })
+                    .then(function(data) {
+                        // Start the backend operation to add student to batch
+                        $scope.loadingPayments = true;
+                        tbPaymentService.recordPayment(batchId, data.student, data.amount, data.time, data.tutorComment).then(function() {
+                            //Refresh payment screen here
+                            $scope.loadingPayments = false;
+                        });
+                    }, function() {
+                        //Cancel was pressed
+                    });
             });
         };
     });
