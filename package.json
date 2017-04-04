@@ -41,6 +41,7 @@
     "mongodb": "^2.2.5",
     "mysql": "^2.11.1",
     "nconf": "^0.8.4",
+    "node-promise": "^0.5.12",
     "prompt": "^1.0.0",
     "restify": "^4.3.0",
     "restify-cookies": "^0.2.2",
