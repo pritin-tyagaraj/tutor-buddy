@@ -1,0 +1,61 @@
+<md-dialog aria-label="Record New Payment" flex="80">
+  <form name="newPaymentForm" ng-cloak>
+    <!-- Dialog toolbar -->
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Record New Payment</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <ng-md-icon icon="close" style="fill:white;"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+
+    <!-- Dialog content -->
+    <md-dialog-content>
+          <md-content layout-padding>
+              <div>
+                  <form>
+                      <div layout-gt-xs="row">
+                          <md-input-container class="md-block" flex-gt-xs>
+                              <label>Student</label>
+                              <md-select name="student" required ng-model="student">
+                                  <md-optgroup label="Students in this batch">
+                                      <md-option ng-value="{{student.id}}" ng-repeat="student in batchStudents">{{student.first_name}} {{student.last_name}}</md-option>
+                                  </md-optgroup>
+                              </md-select>
+                              <div ng-messages="newPaymentForm.student.$error">
+                                  <div ng-message="required">Select the student in this batch from whom you've received payment</div>
+                              </div>
+                          </md-input-container>
+                      </div>
+                      <div layout-gt-xs="row">
+                          <md-input-container class="md-block" flex-gt-sm>
+                              <label>Amount (INR)</label>
+                              <input name="amount" type="number" step="any" required min="1" ng-model="amount">
+                              <div ng-messages="newPaymentForm.amount.$error">
+                                  <div ng-message="required">Enter the payment amount in Indian Rupees</div>
+                                  <div ng-message="min">Enter a positive number. If you accidentally recorded an incorrect amount earlier, you can delete or edit it from the Payments screen.</div>
+                              </div>
+                          </md-input-container>
+                      </div>
+                      <md-input-container class="md-block" flex-gt-sm>
+                          <label>Comments</label>
+                          <input name="tutorComment" ng-model="tutorComment">
+                      </md-input-container>
+                  </form>
+              </div>
+          </md-content>
+      </md-dialog-content>
+
+      <md-dialog-actions layout="row">
+          <span flex></span>
+          <md-button ng-click="cancel()">
+              Cancel
+          </md-button>
+          <md-button ng-disabled="newPaymentForm.$invalid"  class="md-raised md-primary" ng-click="done()">
+              OK
+          </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

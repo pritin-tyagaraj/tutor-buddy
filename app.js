@@ -72,6 +72,9 @@ server.get('/api/v1/batch/:batchId/students', require('./api/v1/student').getStu
 server.post('/api/v1/batch/:batchId/students', require('./api/v1/student').addStudentToBatch);
 server.del('/api/v1/batch/:batchId/student/:studentId', require('./api/v1/student').removeStudentFromBatch);
 
+// Setup 'payments' routes
+server.post('/api/v1/batch/:batchId/student/:studentId/payments', require('./api/v1/payment').recordPayment);
+
 // Google Cloud Health Check paths
 server.get('/_ah/vm_health', (req, res) => {
     res.json(200);
@@ -80,12 +83,14 @@ server.get('/_ah/vm_health', (req, res) => {
 winston.info('Setting up batch routes... Done.');
 
 // For Letsencrypt verification
+/*
 server.get('/.well-known/acme-challenge/1tvWlI0MKwAojMP-hjlFXmspUY9Nv_MfMKEI-bIfvrE', function(req, res, next) {
     res.send('1tvWlI0MKwAojMP-hjlFXmspUY9Nv_MfMKEI-bIfvrE.1_e_ljwng33zNsyfnh65muyDOSIk4th_glYrG4RJXnM');
 });
 server.get('/.well-known/acme-challenge/rfYoOSmZYMf1_TDAyBbCvcKyOlTFftW2j6Miy1ZTMFI', function(req, res, next) {
     res.send('rfYoOSmZYMf1_TDAyBbCvcKyOlTFftW2j6Miy1ZTMFI.1_e_ljwng33zNsyfnh65muyDOSIk4th_glYrG4RJXnM');
 });
+*/
 
 // Serve the static UI resources
 server.get(/^\/?.*/, restify.serveStatic({
