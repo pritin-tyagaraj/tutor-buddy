@@ -112,7 +112,8 @@ var options = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: 'tutor-buddy',
-    multipleStatements: true
+    multipleStatements: true,
+    dateStrings: 'date'
 };
 
 if ((process.env.MODE !== 'TEST') && (process.env.MODE !== DEV)) {
@@ -425,4 +426,28 @@ describe('Payment API', function(done) {
 
     it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch exists but isn\'t owened by the user');
     it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch and student exist, but the student belongs to a different batch');
+
+    it('GET /api/v1/batch/:batchId/payments - Get a list of payments for a batch if the user owns the batch', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/batch/1/payments')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('GET /api/v1/batch/batchId/payments - Error in getting list of payments if user doesn\'t own the batch');
+
+    it('GET /api/v1/batch/batchId/payments - Error in getting list of payments if batch doesn\'t exist', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/batch/4/payments')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(404)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
 });

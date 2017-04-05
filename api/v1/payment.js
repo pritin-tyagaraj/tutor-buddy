@@ -33,7 +33,9 @@ module.exports = {
             }
 
             if (!owner) {
-                res.json(400, 'Are you sure this batch ID ' + batchId + ' exists?');
+                res.json(400, {
+                    message: 'Are you sure batch ID ' + batchId + ' exists?'
+                });
             }
 
             if (userId !== owner) {
@@ -91,6 +93,53 @@ module.exports = {
                 //Done!
                 winston.info('Payment of %s %s recorded by user %s for batch %s', paymentCurrency, paymentAmount, userId, batchId);
                 res.send(201);
+            });
+        });
+    },
+
+    /**
+     * Return a list of payments done for a batch
+     */
+    getPaymentsForBatch: function(req, res, next) {
+        //Get the variables to work with
+        var userId = req.user.id;
+        var batchId = req.params.batchId;
+
+        // Check if user is the owner of this batch. If yes, let him see payment details
+        model.batch.getBatchOwner(batchId, function(err, owner) {
+            if (err) {
+                winston.error('An error occurred in getBatchOwner within getPaymentsForBatch', {
+                    err: err
+                });
+                return res.json(500);
+            }
+
+            // Does the batch exist (and have an associated owner?)
+            if (!owner) {
+                res.json(404, {
+                    message: 'Are you sure batch ID ' + batchId + ' exists?'
+                });
+            }
+
+            //Is the current user = batch's owner user?
+            if (userId !== owner) {
+                winston.error('User %s is not authorized to view payments for batch %s', userId, batchId);
+                res.json(403, {
+                    message: 'You are not authorized to view payments for this batch'
+                });
+                return next();
+            }
+
+            model.payment.getPaymentsForBatch(batchId, (err, result) => {
+                if (err) {
+                    winston.error('An error occurred in getPaymentsForBatch', {
+                        err: err
+                    });
+                }
+
+                // Done!
+                winston.info('Fetched %s results for payment entries for batch %s', result.length, batchId);
+                res.json(200, result);
             });
         });
     }

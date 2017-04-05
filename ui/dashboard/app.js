@@ -1,4 +1,4 @@
-var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'overview', 'payments', 'batches', 'batchDetails', 'apiConnector']);
+var welcomeApp = angular.module('dashboardApp', ['ngMaterial', 'md.data.table', 'ngMessages', 'ngRoute', 'overview', 'payments', 'batches', 'batchDetails', 'apiConnector']);
 welcomeApp.controller('appController', function($scope, $timeout, $location, $log, $interval, $mdSidenav, $log, $rootScope, $route, $window, tbUserService) {
     var adsInitialized = false;
 

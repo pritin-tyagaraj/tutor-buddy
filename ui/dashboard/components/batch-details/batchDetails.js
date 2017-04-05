@@ -1,6 +1,7 @@
 // Enum for each tab in the batch details screen
 var Tab = {
-    Students: 1
+    Students: 1,
+    Payments: 4
 };
 
 angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.components.expansionPanels', 'apiConnector'])
@@ -22,6 +23,8 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
         $scope.$watch('selectedTabIndex', function(currentTab, oldTab) {
             if (currentTab === Tab.Students) {
                 refreshStudentList($scope, tbBatchService, batchId);
+            } else if (currentTab === Tab.Payments) {
+                refreshPaymentsList($scope, tbPaymentService, batchId);
             }
         });
 
@@ -112,7 +115,7 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
                         $scope.loadingPayments = true;
                         tbPaymentService.recordPayment(batchId, data.student, data.amount, data.time, data.tutorComment).then(function() {
                             //Refresh payment screen here
-                            $scope.loadingPayments = false;
+                            refreshPaymentsList($scope, tbPaymentService, batchId);
                         });
                     }, function() {
                         //Cancel was pressed
@@ -129,6 +132,17 @@ function refreshStudentList($scope, tbBatchService, batchId) {
     tbBatchService.getStudentsForBatch(batchId).then(function(data) {
         $scope.students = data;
         $scope.loadingStudents = false;
+    });
+}
+
+/**
+ * Helper to fetch list of payments
+ */
+function refreshPaymentsList($scope, tbPaymentService, batchId) {
+    $scope.loadingPayments = true;
+    tbPaymentService.getPaymentsForBatch(batchId).then(function(data) {
+        $scope.payments = data;
+        $scope.loadingPayments = false;
     });
 }
 
