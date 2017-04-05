@@ -18,6 +18,24 @@ apiConnector.factory('tbPaymentService', function($http, $q) {
                 deferred.reject(data, status);
             });
             return deferred.promise;
+        },
+
+        /**
+         * Gets a list of recorded payments for the specified batch
+         */
+        getPaymentsForBatch: function(batchId) {
+            var deferred = $q.defer();
+            var that = this;
+            $http.get('/api/v1/batch/' + batchId + '/payments').then(function(response) {
+                // For each date (payment date), convert the value to a local time Date object
+                response.data.forEach(function(payment) {
+                    payment.time = moment.utc(payment.time, 'YYYY-MM-DD HH:mm:ss').local().toDate();
+                });
+                deferred.resolve(response.data);
+            }, function(data, status, headers, config) {
+                deferred.reject(data, status);
+            });
+            return deferred.promise;
         }
     };
 });

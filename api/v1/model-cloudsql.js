@@ -29,7 +29,8 @@ function getConnection() {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: 'tutor-buddy',
-        multipleStatements: true
+        multipleStatements: true,
+        dateStrings: 'date'
     };
 
     if ((process.env.MODE !== 'TEST') && (process.env.MODE !== 'DEV')) {
@@ -52,8 +53,8 @@ function executeQuery(queryString, queryParams, errorCb, successCb) {
             return errorCb(err);
         }
         successCb(results);
+        connection.end();
     });
-    connection.end();
 }
 
 /**

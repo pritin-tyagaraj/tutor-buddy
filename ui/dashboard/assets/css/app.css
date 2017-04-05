@@ -37,3 +37,15 @@
 .tbNoDataText {
     font-weight: 500;
 }
+
+.tbTableContainer {
+    background-color: white;
+}
+
+.md-column span {
+    font-size: 16px;
+}
+
+.md-table .md-cell {
+    font-size: 15px !important;
+}
