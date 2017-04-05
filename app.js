@@ -74,6 +74,7 @@ server.del('/api/v1/batch/:batchId/student/:studentId', require('./api/v1/studen
 
 // Setup 'payments' routes
 server.post('/api/v1/batch/:batchId/student/:studentId/payments', require('./api/v1/payment').recordPayment);
+server.get('/api/v1/batch/:batchId/payments', require('./api/v1/payment').getPaymentsForBatch);
 
 // Google Cloud Health Check paths
 server.get('/_ah/vm_health', (req, res) => {

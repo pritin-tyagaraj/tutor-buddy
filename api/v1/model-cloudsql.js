@@ -311,6 +311,16 @@ function recordPayment(studentId, batchId, paymentMode, paymentAmount, paymentCu
     });
 }
 
+/**
+ * Retrives the list of payments for the specified batch
+ */
+function getPaymentsForBatch(batchId, cb) {
+    executeQuery('SELECT ' + Table.PAYMENTS + '.student_id, ' + Table.STUDENTS + '.first_name, ' + Table.STUDENTS + '.last_name, ' + Table.PAYMENTS + '.amount, ' + Table.PAYMENTS + '.currency, ' + Table.PAYMENTS + '.time, ' + Table.PAYMENTS +
+        '.tutor_comment FROM ' + Table.PAYMENTS + ' INNER JOIN ' + Table.STUDENTS + ' ON ' + Table.PAYMENTS + '.student_id = ' + Table.STUDENTS + '.id WHERE ' + Table.PAYMENTS + '.batch_id = ?', [batchId], cb, (result) => {
+            cb(null, result);
+        });
+}
+
 module.exports = {
     user: {
         getUserProfile: getUserProfile,
@@ -337,6 +347,7 @@ module.exports = {
         removeStudentFromBatch: removeStudentFromBatch
     },
     payment: {
-        recordPayment: recordPayment
+        recordPayment: recordPayment,
+        getPaymentsForBatch: getPaymentsForBatch
     }
 };
