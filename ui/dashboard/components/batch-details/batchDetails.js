@@ -24,7 +24,17 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
             if (currentTab === Tab.Students) {
                 refreshStudentList($scope, tbBatchService, batchId);
             } else if (currentTab === Tab.Payments) {
+                // PAYMENTS
                 refreshPaymentsList($scope, tbPaymentService, batchId);
+
+                // Load students to be shown in the filter dropdown
+                tbBatchService.getStudentsForBatch(batchId).then(function(students) {
+                    $scope.paymentsStudents = students;
+                });
+
+                $scope.paymentsFilter = {
+                    student: null
+                };
             }
         });
 
@@ -122,6 +132,11 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
                     });
             });
         };
+
+        $scope.filterPaymentsByStudent = function() {
+            var filterStudentId = ($scope.paymentsFilter.student === "all") ? null : $scope.paymentsFilter.student;
+            refreshPaymentsList($scope, tbPaymentService, batchId, filterStudentId);
+        };
     });
 
 /**
@@ -138,9 +153,9 @@ function refreshStudentList($scope, tbBatchService, batchId) {
 /**
  * Helper to fetch list of payments
  */
-function refreshPaymentsList($scope, tbPaymentService, batchId) {
+function refreshPaymentsList($scope, tbPaymentService, batchId, filterStudentId) {
     $scope.loadingPayments = true;
-    tbPaymentService.getPaymentsForBatch(batchId).then(function(data) {
+    tbPaymentService.getPaymentsForBatch(batchId, filterStudentId).then(function(data) {
         $scope.payments = data;
         $scope.loadingPayments = false;
     });

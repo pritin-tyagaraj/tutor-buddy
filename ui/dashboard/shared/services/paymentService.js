@@ -23,10 +23,17 @@ apiConnector.factory('tbPaymentService', function($http, $q) {
         /**
          * Gets a list of recorded payments for the specified batch
          */
-        getPaymentsForBatch: function(batchId) {
+        getPaymentsForBatch: function(batchId, filterStudentId) {
             var deferred = $q.defer();
             var that = this;
-            $http.get('/api/v1/batch/' + batchId + '/payments').then(function(response) {
+
+            // Form the request URL
+            var url = '/api/v1/batch/' + batchId + '/payments';
+            if(filterStudentId) {
+                url += '?student=' + filterStudentId
+            }
+            
+            $http.get(url).then(function(response) {
                 // For each date (payment date), convert the value to a local time Date object
                 response.data.forEach(function(payment) {
                     payment.time = moment.utc(payment.time, 'YYYY-MM-DD HH:mm:ss').local().toDate();

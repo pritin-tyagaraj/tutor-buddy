@@ -99,11 +99,13 @@ module.exports = {
 
     /**
      * Return a list of payments done for a batch
+     * Supported filter: ?student=:studentId
      */
     getPaymentsForBatch: function(req, res, next) {
         //Get the variables to work with
         var userId = req.user.id;
         var batchId = req.params.batchId;
+        var studentFilter = req.query.student;
 
         // Check if user is the owner of this batch. If yes, let him see payment details
         model.batch.getBatchOwner(batchId, function(err, owner) {
@@ -130,7 +132,7 @@ module.exports = {
                 return next();
             }
 
-            model.payment.getPaymentsForBatch(batchId, (err, result) => {
+            model.payment.getPaymentsForBatch(batchId, studentFilter, (err, result) => {
                 if (err) {
                     winston.error('An error occurred in getPaymentsForBatch', {
                         err: err
@@ -143,4 +145,5 @@ module.exports = {
             });
         });
     }
+
 };

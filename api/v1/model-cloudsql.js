@@ -315,12 +315,23 @@ function recordPayment(studentId, batchId, paymentMode, paymentAmount, paymentCu
 /**
  * Retrives the list of payments for the specified batch
  */
-function getPaymentsForBatch(batchId, cb) {
-    executeQuery('SELECT ' + Table.PAYMENTS + '.student_id, ' + Table.STUDENTS + '.first_name, ' + Table.STUDENTS + '.last_name, ' + Table.PAYMENTS + '.amount, ' + Table.PAYMENTS + '.currency, ' + Table.PAYMENTS + '.time, ' + Table.PAYMENTS +
-        '.tutor_comment FROM ' + Table.PAYMENTS + ' INNER JOIN ' + Table.STUDENTS + ' ON ' + Table.PAYMENTS + '.student_id = ' + Table.STUDENTS + '.id WHERE ' + Table.PAYMENTS + '.batch_id = ?', [batchId], cb, (result) => {
+function getPaymentsForBatch(batchId, studentFilter, cb) {
+    // Form the SQL query to get all data
+    var sql = 'SELECT ' + Table.PAYMENTS + '.student_id, ' + Table.STUDENTS + '.first_name, ' + Table.STUDENTS + '.last_name, ' + Table.PAYMENTS + '.amount, ' + Table.PAYMENTS + '.currency, ' + Table.PAYMENTS + '.time, ' + Table.PAYMENTS +
+        '.tutor_comment FROM ' + Table.PAYMENTS + ' INNER JOIN ' + Table.STUDENTS + ' ON ' + Table.PAYMENTS + '.student_id = ' + Table.STUDENTS + '.id WHERE ' + Table.PAYMENTS + '.batch_id = ?';
+    var values = [batchId];
+
+    // Apply a filter on 'student' if a filter was passed
+    if(studentFilter) {
+        sql += ' AND ' + Table.STUDENTS + '.id = ?';
+        values.push(studentFilter);
+    }
+
+    executeQuery(sql, values, cb, (result) => {
             cb(null, result);
         });
 }
+
 
 module.exports = {
     user: {
