@@ -438,6 +438,18 @@ describe('Payment API', function(done) {
             });
     });
 
+    it('GET /api/v1/batch/:batchId/payments - Get a list of payments for a batch with a filter on student ID', function(done) {
+        this.timeout(5000);
+        server.get('/api/v1/batch/1/payments?student=2')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+
     it('GET /api/v1/batch/batchId/payments - Error in getting list of payments if user doesn\'t own the batch');
 
     it('GET /api/v1/batch/batchId/payments - Error in getting list of payments if batch doesn\'t exist', function(done) {
