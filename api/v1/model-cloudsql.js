@@ -332,6 +332,28 @@ function getPaymentsForBatch(batchId, studentFilter, cb) {
         });
 }
 
+function getPaymentOwner(paymentId, cb) {
+    executeQuery('SELECT ' + Table.TUTOR_BATCH_MAP + '.tutor_id FROM ' + Table.PAYMENTS + ' INNER JOIN ' + Table.TUTOR_BATCH_MAP + ' ON ' + Table.PAYMENTS + '.batch_id = ' + Table.TUTOR_BATCH_MAP + '.batch_id WHERE ' + Table.PAYMENTS +
+        '.id = ?', [paymentId], cb, (result) => {
+            if (result.length == 0) {
+                winston.info('model: Found no owner for payment %s', paymentId);
+                cb(null, "");
+            } else if (result.length > 1) {
+                winston.error('model: Found multiple owners for payment %s', paymentId);
+                cb(null, null);
+            } else {
+                var ownerId = result[0].tutor_id;
+                winston.info('model: Found tutorId %s for payment %s', ownerId, paymentId);
+                cb(null, ownerId);
+            }    
+        });
+}
+
+function deletePayment(paymentId, cb) {
+    executeQuery('DELETE FROM ' + Table.PAYMENTS + ' WHERE id=?', [paymentId], cb, () => {
+        cb();
+    });
+}
 
 module.exports = {
     user: {
@@ -360,6 +382,8 @@ module.exports = {
     },
     payment: {
         recordPayment: recordPayment,
-        getPaymentsForBatch: getPaymentsForBatch
+        getPaymentsForBatch: getPaymentsForBatch,
+        getPaymentOwner: getPaymentOwner,
+        deletePayment: deletePayment
     }
 };

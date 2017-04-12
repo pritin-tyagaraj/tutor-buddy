@@ -144,6 +144,45 @@ module.exports = {
                 res.json(200, result);
             });
         });
+    },
+
+    /**
+     * Deletes a payment if the user is the owner of the batch for which the payment was recorded
+     */
+    deletePayment: function(req, res, next) {
+        var paymentId = req.params.paymentId;
+        var userId = req.user.id;
+
+        model.payment.getPaymentOwner(paymentId, function(err, owner) {
+            if(err) {
+                winston.error('An error occurred in getBatchOwner within getPaymentsForBatch', {
+                    err: err
+                });
+                return res.json(500);
+            }
+
+            // Does the specified payment ID exist and have an owner? (owner of payment = user who has acceess to delete, edit etc. it = owner of the batch for which the payment was made)
+            if(userId !== owner) {
+                winston.error('User %s is not authorized to delete payment ', userId, paymentId);
+                res.json(403, {
+                    message: 'You are not authorized to delete this payment'
+                });
+                return next();
+            }
+
+            // Checks done. Proceed to delete the payment entry.
+            model.payment.deletePayment(paymentId, (err, result) => {
+                if (err) {
+                    winston.error('An error occurred in deletePayment', {
+                        err: err
+                    });
+                }
+
+                // No error? Payment was deleted!
+                winston.info('Payment %s deleted by user %s', paymentId, userId);
+                res.json(200);
+            });
+        });
     }
 
 };

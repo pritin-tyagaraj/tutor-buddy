@@ -462,4 +462,28 @@ describe('Payment API', function(done) {
                 done();
             });
     });
+
+    it('DELETE /api/v1/payment/:paymentId - Delete a payment if authorized', function(done) {
+        this.timeout(5000);
+        server.del('/api/v1/payment/1')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('DELETE /api/v1/payment/:paymentId - Delete of payment fails if payment ID doesn\'t exist', function(done) {
+        this.timeout(5000);
+        server.del('/api/v1/payment/999')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(403)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('DELETE /api/v1/payment/:paymentId - Delete of payment fails if user isn\'t authorized');
 });
