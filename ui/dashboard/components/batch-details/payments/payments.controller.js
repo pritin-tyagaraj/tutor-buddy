@@ -9,6 +9,7 @@
         $scope.table = {
             rowSelection: true,
             selectedRows: [],
+            sortOrder: '-time',
             filter: {
                 student: null
             }
