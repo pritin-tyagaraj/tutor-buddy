@@ -16,10 +16,14 @@ angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.
         });
     })
 
-    .controller('batchDetailsController', function($scope, $location, tbBatchService, tbUserService, tbPaymentService, $mdDialog, $routeParams) {
+    .controller('batchDetailsController', function($scope, $location, tbBatchService, $mdDialog, $routeParams) {
         // Initialize scope variables
         $scope.currentBatchId = $routeParams.batchId;
         $scope.selectedTabIndex = 0;
+
+        tbBatchService.getStudentsForBatch($scope.currentBatchId).then(function(students) {
+            $scope.batchStudents = students;
+        });
 
         //Handle deletion of batches
         $scope.deleteBatch = function(ev) {

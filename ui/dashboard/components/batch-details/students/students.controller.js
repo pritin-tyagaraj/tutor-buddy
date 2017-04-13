@@ -14,7 +14,7 @@
                 batchId = $scope.$parent.currentBatchId;
 
                 // Load the list of students
-                $scope.refreshStudentList($scope, tbBatchService, $scope.currentBatchId);
+                $scope.students = $scope.$parent.batchStudents;
             }
         });
 
@@ -69,6 +69,7 @@
             $scope.loading = true;
             tbBatchService.getStudentsForBatch(batchId).then(function(data) {
                 $scope.students = data;
+                $scope.$parent.batchStudents = data;
                 $scope.loading = false;
             });
         };
