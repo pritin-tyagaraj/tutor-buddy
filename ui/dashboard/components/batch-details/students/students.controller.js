@@ -3,13 +3,13 @@
 
     var batchId;
 
-    angular.module('dashboardApp').controller('StudentsController', function($scope, tbBatchService, $mdDialog) {
+    angular.module('dashboardApp').controller('StudentsController', function($scope, tbBatchService, $mdDialog, BatchDetailsTab) {
         // Setup scope for UI bindings
         $scope.loading = false;
 
         // React if the user has just arrived to the Payments tab
         $scope.$watch('selectedTabIndex', function(currentTab, oldTab) {
-            if (currentTab === Tab.Students) {
+            if (currentTab === BatchDetailsTab.Students) {
                 // Which batch are we working with?
                 batchId = $scope.$parent.currentBatchId;
 
