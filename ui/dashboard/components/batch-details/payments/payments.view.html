@@ -45,7 +45,7 @@
               <tr md-row md-auto-select="true" md-select="payment" ng-repeat="payment in payments | orderBy: table.sortOrder">
                 <td md-cell>{{payment.first_name}} {{payment.last_name}}</td>
                 <td md-cell>₹ {{payment.amount | number:0}}</td>
-                <td md-cell>{{payment.time | date:'medium'}}</td>
+                <td md-cell>{{payment.time | date:'mediumDate'}}</td>
                 <td md-cell>{{payment.tutor_comment}}</td>
               </tr>
             </tbody>

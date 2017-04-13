@@ -62,3 +62,7 @@
 .tbTableToolbarRowsSelected .md-icon-button {
     margin-bottom: 8px !important;
 }
+
+.tbDatePicker input {
+    font-size: 16px !important;
+}
