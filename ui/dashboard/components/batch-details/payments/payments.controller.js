@@ -3,7 +3,7 @@
 
     var batchId;
 
-    angular.module('dashboardApp').controller('PaymentsController', function($scope, $mdDialog, tbPaymentService, tbBatchService) {
+    angular.module('dashboardApp').controller('PaymentsController', function($scope, $mdDialog, tbPaymentService, tbBatchService, BatchDetailsTab) {
         // Setup scope for UI bindings
         $scope.loading = false;
         $scope.table = {
@@ -17,7 +17,7 @@
 
         // React if the user has just arrived to the Payments tab
         $scope.$watch('selectedTabIndex', function(currentTab, oldTab) {
-            if (currentTab === Tab.Payments) {
+            if (currentTab === BatchDetailsTab.Payments) {
                 // Which batch are we working with?
                 batchId = $scope.$parent.currentBatchId;
 
@@ -33,40 +33,34 @@
 
         // Handle manual recording of payment
         $scope.recordPayment = function(ev) {
-            //Load the list of students in this batch to show within the dialog
-            $scope.loading = true;
-            tbBatchService.getStudentsForBatch(batchId).then(function(students) {
-                // Now show the record payment dialog
-                $scope.loading = false;
-                $mdDialog.show({
-                        locals: {
-                            students: students
-                        },
-                        controller: ['$scope', 'students', function($dialogScope, students) {
-                            $dialogScope.batchStudents = students;
-                            $dialogScope.cancel = function() {
-                                $mdDialog.cancel();
-                            };
-                            $dialogScope.done = function() {
-                                $mdDialog.hide($dialogScope);
-                            };
-                        }],
-                        templateUrl: 'dashboard/components/batch-details/payments/recordPaymentDialog.template.html',
-                        targetEvent: ev,
-                        clickOutsideToClose: true,
-                        fullscreen: false
-                    })
-                    .then(function(data) {
-                        // Start the backend operation to add student to batch
-                        $scope.loading = true;
-                        tbPaymentService.recordPayment(batchId, data.student, data.amount, data.time, data.tutorComment).then(function() {
-                            //Refresh payment screen here
-                            $scope.refreshPaymentsList();
-                        });
-                    }, function() {
-                        //Cancel was pressed
+            $mdDialog.show({
+                    locals: {
+                        students: $scope.$parent.batchStudents
+                    },
+                    controller: ['$scope', 'students', function($dialogScope, students) {
+                        $dialogScope.batchStudents = students;
+                        $dialogScope.cancel = function() {
+                            $mdDialog.cancel();
+                        };
+                        $dialogScope.done = function() {
+                            $mdDialog.hide($dialogScope);
+                        };
+                    }],
+                    templateUrl: 'dashboard/components/batch-details/payments/recordPaymentDialog.template.html',
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    fullscreen: false
+                })
+                .then(function(data) {
+                    // Start the backend operation to add student to batch
+                    $scope.loading = true;
+                    tbPaymentService.recordPayment(batchId, data.student, data.amount, data.time, data.tutorComment).then(function() {
+                        //Refresh payment screen here
+                        $scope.refreshPaymentsList();
                     });
-            });
+                }, function() {
+                    //Cancel was pressed
+                });
         };
 
         // Handle deletion of the selected payment row

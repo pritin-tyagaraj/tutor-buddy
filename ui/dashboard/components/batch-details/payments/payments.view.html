@@ -17,7 +17,7 @@
                 <div flex></div>
                 <md-select ng-model="table.filter.student" md-on-close="refreshPaymentsList($event)" placeholder="Filter by Student" class="md-no-underline tbTableToolbarDropdown">
                     <md-option value="all">All Students</md-option>
-                    <md-option ng-repeat="paymentStudent in paymentsStudents" value="{{paymentStudent.id}}">{{paymentStudent.first_name}} {{paymentStudent.last_name}}</md-option>
+                    <md-option ng-repeat="student in $parent.batchStudents" value="{{student.id}}">{{student.first_name}} {{student.last_name}}</md-option>
                 </md-select>
             </div>
 

@@ -1,109 +1,47 @@
-// Enum for each tab in the batch details screen
-var Tab = {
-    Students: 1,
-    Payments: 4
-};
-
-angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.components.expansionPanels', 'apiConnector'])
-    // Routes for this module
-    .config(function($routeProvider) {
-        $routeProvider.when('/batch/:batchId', {
-            templateUrl: 'dashboard/components/batch-details/batchDetailsView.html',
-            controller: 'batchDetailsController',
-            title: "Batch Details"
-        });
-    })
-
-    .controller('batchDetailsController', function($scope, $location, tbBatchService, tbUserService, tbPaymentService, $mdDialog, $routeParams) {
-        // Which batch are we showing details for?
-        $scope.currentBatchId = $routeParams.batchId;
-
-        // React when the user switches tabs
-        $scope.selectedTabIndex = 0;
-        $scope.$watch('selectedTabIndex', function(currentTab, oldTab) {
-            if (currentTab === Tab.Students) {
-                refreshStudentList($scope, tbBatchService, $scope.currentBatchId);
-            }
-        });
-
-        //Handle deletion of batches
-        $scope.deleteBatch = function(ev) {
-            var confirmDialog = $mdDialog.confirm()
-                .title('Delete Batch')
-                .textContent('Are you sure you want to delete this batch? There\'s no going back!')
-                .ariaLabel('Delete Batch')
-                .targetEvent(ev)
-                .ok('Yes, delete this batch')
-                .cancel('Cancel');
-
-            $mdDialog.show(confirmDialog).then(function() {
-                // User confirmed deletion
-                tbBatchService.deleteBatch($scope.currentBatchId).then(function() {
-                    $location.path('/batches');
-                });
+(function() {
+    angular.module('batchDetails', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.components.expansionPanels', 'apiConnector'])
+        // Routes for this module
+        .config(function($routeProvider) {
+            $routeProvider.when('/batch/:batchId', {
+                templateUrl: 'dashboard/components/batch-details/batchDetailsView.html',
+                controller: 'batchDetailsController',
+                title: "Batch Details"
             });
-        };
+        })
 
-        // Handle addition of students
-        $scope.addStudent = function(ev) {
-            $mdDialog.show({
-                    controller: NewStudentDialogController,
-                    templateUrl: 'dashboard/components/batch-details/newStudentDialog.template.html',
-                    targetEvent: ev,
-                    clickOutsideToClose: true,
-                    fullscreen: false
-                })
-                .then(function(data) {
-                    // Start the backend operation to add student to batch
-                    $scope.loadingStudents = true;
-                    tbBatchService.addStudent($scope.currentBatchId, data).then(function() {
-                        refreshStudentList($scope, tbBatchService, $scope.currentBatchId);
+        .controller('batchDetailsController', function($scope, $location, tbBatchService, $mdDialog, $routeParams) {
+            // Initialize scope variables
+            $scope.currentBatchId = $routeParams.batchId;
+            $scope.selectedTabIndex = 0;
+
+            tbBatchService.getStudentsForBatch($scope.currentBatchId).then(function(students) {
+                $scope.batchStudents = students;
+            });
+
+            //Handle deletion of batches
+            $scope.deleteBatch = function(ev) {
+                var confirmDialog = $mdDialog.confirm()
+                    .title('Delete Batch')
+                    .textContent('Are you sure you want to delete this batch? There\'s no going back!')
+                    .ariaLabel('Delete Batch')
+                    .targetEvent(ev)
+                    .ok('Yes, delete this batch')
+                    .cancel('Cancel');
+
+                $mdDialog.show(confirmDialog).then(function() {
+                    // User confirmed deletion
+                    tbBatchService.deleteBatch($scope.currentBatchId).then(function() {
+                        $location.path('/batches');
                     });
-                }, function() {
-                    //Cancel was pressed
                 });
-        };
+            };
+        })
 
-        //Handle removal of students
-        $scope.removeStudent = function(ev, student) {
-            var confirmDialog = $mdDialog.confirm()
-                .title('Remove Student')
-                .textContent('Are you sure you want to remove ' + student.first_name + ' ' + student.last_name + ' from this batch?')
-                .ariaLabel('Remove Student ' + student.first_name + ' ' + student.last_name)
-                .targetEvent(ev)
-                .ok('Yes, remove this student')
-                .cancel('Cancel');
-
-            $mdDialog.show(confirmDialog).then(function() {
-                // User confirmed deletion
-                $scope.loadingStudents = true;
-                tbBatchService.removeStudent($scope.currentBatchId, student.id).then(function() {
-                    refreshStudentList($scope, tbBatchService, $scope.currentBatchId);
-                });
-            });
-        };
-    });
-
-/**
- * Helper to fetch list of students
- */
-function refreshStudentList($scope, tbBatchService, batchId) {
-    $scope.loadingStudents = true;
-    tbBatchService.getStudentsForBatch(batchId).then(function(data) {
-        $scope.students = data;
-        $scope.loadingStudents = false;
-    });
-}
-
-
-
-// Controller for the 'Add student' dialog
-function NewStudentDialogController($scope, $mdDialog) {
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-
-    $scope.done = function() {
-        $mdDialog.hide($scope.student);
-    };
-}
+        // Enum for possible tabs
+        .constant('BatchDetailsTab', {
+            Students: 1,
+            Scribble: 2,
+            Attendance: 3,
+            Payments: 4
+        });
+})();
