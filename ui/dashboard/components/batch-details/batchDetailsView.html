@@ -62,52 +62,7 @@
         </md-content>
       </md-tab>
       <md-tab label="Payments">
-        <md-content class="md-padding">
-            <!-- Action buttons -->
-            <div class="md-toolbar-tools">
-                <span flex></span>
-                <md-button md-no-ink class="md-raised md-primary" ng-disabled="loadingPayments" ng-click="recordPayment($event)">Record Payment</md-button>
-            </div>
-
-            <!-- Progress bar -->
-            <md-progress-linear md-mode="indeterminate" ng-show="loadingPayments"></md-progress-linear>
-
-            <!-- Table -->
-            <h4 class="tbNoDataText" ng-if="!loadingPayments && (!payments || payments.length == 0)">You will see details of payments made by students of this batch here.</h4>
-            <div class="md-whiteframe-1dp tbTableContainer" ng-if="payments && payments.length > 0">
-                <md-toolbar class="md-table-toolbar md-default">
-                    <div class="md-toolbar-tools">
-                        <span>All Payments</span>
-                        <div flex></div>
-                        <md-select ng-model="paymentsFilter.student" md-on-close="filterPaymentsByStudent($event)" placeholder="Filter by Student" class="md-no-underline tbTableToolbarDropdown">
-                            <md-option value="all">All Students</md-option>
-                            <md-option ng-repeat="paymentStudent in paymentsStudents" value="{{paymentStudent.id}}">{{paymentStudent.first_name}} {{paymentStudent.last_name}}</md-option>
-                        </md-select>
-                    </div>
-                </md-toolbar>
-
-                <md-table-container>
-                  <table md-table md-row-select multiple ng-class="{tbTableRowLoading: loadingPayments}">
-                    <thead md-head>
-                      <tr md-row>
-                        <th md-column><span>Student</span></th>
-                        <th md-column md-numeric><span>Amount</span></th>
-                        <th md-column md-numeric><span>Date</span></th>
-                        <th md-column><span>Your comments</span></th>
-                      </tr>
-                    </thead>
-                    <tbody md-body>
-                      <tr md-row md-auto-select ng-repeat="payment in payments">
-                        <td md-cell>{{payment.first_name}} {{payment.last_name}}</td>
-                        <td md-cell>₹ {{payment.amount | number:0}}</td>
-                        <td md-cell>{{payment.time | date:'medium'}}</td>
-                        <td md-cell>{{payment.tutor_comment}}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </md-table-container>
-            </div>
-        </md-content>
+          <ng-include src="'dashboard/components/batch-details/payments/payments.view.html'" ng-controller="PaymentsController"/>
       </md-tab>
     </md-tabs>
   </md-content>

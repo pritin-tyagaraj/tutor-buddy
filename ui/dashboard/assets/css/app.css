@@ -54,3 +54,11 @@
     margin-top: 28px;
     font-size: 17px;
 }
+
+.tbTableToolbarRowsSelected {
+    background-color: rgba(1, 62, 208, 0.18)
+}
+
+.tbTableToolbarRowsSelected .md-icon-button {
+    margin-bottom: 8px !important;
+}

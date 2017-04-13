@@ -317,7 +317,7 @@ function recordPayment(studentId, batchId, paymentMode, paymentAmount, paymentCu
  */
 function getPaymentsForBatch(batchId, studentFilter, cb) {
     // Form the SQL query to get all data
-    var sql = 'SELECT ' + Table.PAYMENTS + '.student_id, ' + Table.STUDENTS + '.first_name, ' + Table.STUDENTS + '.last_name, ' + Table.PAYMENTS + '.amount, ' + Table.PAYMENTS + '.currency, ' + Table.PAYMENTS + '.time, ' + Table.PAYMENTS +
+    var sql = 'SELECT ' + Table.PAYMENTS + '.id, ' + Table.PAYMENTS + '.student_id, ' + Table.STUDENTS + '.first_name, ' + Table.STUDENTS + '.last_name, ' + Table.PAYMENTS + '.amount, ' + Table.PAYMENTS + '.currency, ' + Table.PAYMENTS + '.time, ' + Table.PAYMENTS +
         '.tutor_comment FROM ' + Table.PAYMENTS + ' INNER JOIN ' + Table.STUDENTS + ' ON ' + Table.PAYMENTS + '.student_id = ' + Table.STUDENTS + '.id WHERE ' + Table.PAYMENTS + '.batch_id = ?';
     var values = [batchId];
 
@@ -345,7 +345,7 @@ function getPaymentOwner(paymentId, cb) {
                 var ownerId = result[0].tutor_id;
                 winston.info('model: Found tutorId %s for payment %s', ownerId, paymentId);
                 cb(null, ownerId);
-            }    
+            }
         });
 }
 

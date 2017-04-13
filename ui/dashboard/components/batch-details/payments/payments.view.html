@@ -1,0 +1,58 @@
+<md-content class="md-padding">
+    <!-- Action buttons -->
+    <div class="md-toolbar-tools">
+        <span flex></span>
+        <md-button md-no-ink class="md-raised md-primary" ng-disabled="loadingPayments" ng-click="recordPayment($event)">Record Payment</md-button>
+    </div>
+
+    <!-- Progress bar -->
+    <md-progress-linear md-mode="indeterminate" ng-show="loading"></md-progress-linear>
+
+    <!-- Table -->
+    <div class="md-whiteframe-1dp tbTableContainer">
+        <md-toolbar class="md-table-toolbar md-default">
+            <!-- Toolbar when no rows selected -->
+            <div ng-show="!table.selectedRows.length" class="md-toolbar-tools">
+                <span>All Payments</span>
+                <div flex></div>
+                <md-select ng-model="table.filter.student" md-on-close="refreshPaymentsList($event)" placeholder="Filter by Student" class="md-no-underline tbTableToolbarDropdown">
+                    <md-option value="all">All Students</md-option>
+                    <md-option ng-repeat="paymentStudent in paymentsStudents" value="{{paymentStudent.id}}">{{paymentStudent.first_name}} {{paymentStudent.last_name}}</md-option>
+                </md-select>
+            </div>
+
+            <!-- Toolbar when one or more items selected -->
+            <div ng-show="table.selectedRows.length" class="md-toolbar-tools tbTableToolbarRowsSelected">
+                <span ng-show="table.selectedRows.length">{{table.selectedRows.length}} {{table.selectedRows.length > 1 ? 'payments' : 'payment'}} selected</span>
+                <div flex></div>
+                <md-button class="md-icon-button" ng-click="deletePayment($event)" aria-label="remove">
+                    <ng-md-icon icon="delete" style="fill:grey;" size="32"></ng-md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+
+        <md-table-container ng-if="payments && payments.length > 0">
+          <table md-table ng-model="table.selectedRows" md-row-select="table.rowSelection" multiple="false" ng-class="{tbTableRowLoading: loading}">
+            <thead md-head>
+              <tr md-row>
+                <th md-column><span>Student</span></th>
+                <th md-column md-numeric><span>Amount</span></th>
+                <th md-column md-numeric><span>Date</span></th>
+                <th md-column><span>Your comments</span></th>
+              </tr>
+            </thead>
+            <tbody md-body>
+              <tr md-row md-auto-select="true" md-select="payment" ng-repeat="payment in payments">
+                <td md-cell>{{payment.first_name}} {{payment.last_name}}</td>
+                <td md-cell>₹ {{payment.amount | number:0}}</td>
+                <td md-cell>{{payment.time | date:'medium'}}</td>
+                <td md-cell>{{payment.tutor_comment}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+    </div>
+
+    <!-- No data text -->
+    <h4 class="tbNoDataText" ng-if="!loading && (!payments || payments.length == 0)">You will see details of payments made by students of this batch here.</h4>
+</md-content>
