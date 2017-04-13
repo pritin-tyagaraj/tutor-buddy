@@ -38,6 +38,9 @@
                                   <div ng-message="min">Enter a positive number. If you accidentally recorded an incorrect amount earlier, you can delete or edit it from the Payments screen.</div>
                               </div>
                           </md-input-container>
+                          <md-input-container class="md-block" flex-gt-sm>
+                              <md-datepicker ng-model="time" md-placeholder="Today" class="tbDatePicker"></md-datepicker>
+                          </md-input-container>
                       </div>
                       <md-input-container class="md-block" flex-gt-sm>
                           <label>Comments</label>

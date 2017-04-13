@@ -10,7 +10,7 @@ apiConnector.factory('tbPaymentService', function($http, $q) {
             $http.post('/api/v1/batch/' + batchId + '/student/' + studentId + '/payments', {
                 amount: amount,
                 currency: 'INR',
-                time: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
+                time: time ? moment(time).format('YYYY-MM-DD HH:mm:ss') : moment.utc().format('YYYY-MM-DD HH:mm:ss'),
                 tutor_comment: tutorComment
             }).then(function(response) {
                 deferred.resolve();
