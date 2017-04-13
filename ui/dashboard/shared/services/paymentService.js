@@ -32,7 +32,7 @@ apiConnector.factory('tbPaymentService', function($http, $q) {
             if(filterStudentId) {
                 url += '?student=' + filterStudentId
             }
-            
+
             $http.get(url).then(function(response) {
                 // For each date (payment date), convert the value to a local time Date object
                 response.data.forEach(function(payment) {
@@ -41,6 +41,19 @@ apiConnector.factory('tbPaymentService', function($http, $q) {
                 deferred.resolve(response.data);
             }, function(data, status, headers, config) {
                 deferred.reject(data, status);
+            });
+            return deferred.promise;
+        },
+
+        /**
+         * Deletes a payment record by ID
+         */
+        deletePayment: function(paymentId) {
+            var deferred = $q.defer();
+            $http.delete('/api/v1/payment/' + paymentId).then(function() {
+                deferred.resolve();
+            }, function(data, status, headers, config) {
+                deferred.reject();
             });
             return deferred.promise;
         }
