@@ -71,6 +71,8 @@ server.del('/api/v1/batch/:batchId', require('./api/v1/batch').deleteBatch);
 server.get('/api/v1/batch/:batchId/students', require('./api/v1/student').getStudentsForBatch);
 server.post('/api/v1/batch/:batchId/students', require('./api/v1/student').addStudentToBatch);
 server.del('/api/v1/batch/:batchId/student/:studentId', require('./api/v1/student').removeStudentFromBatch);
+server.get('/api/v1/batch/:batchId/scribble', require('./api/v1/scribble').getScribbleForBatch);
+server.post('/api/v1/batch/:batchId/scribble', require('./api/v1/scribble').updateScribbleForBatch);
 
 // Setup 'payments' routes
 server.post('/api/v1/batch/:batchId/student/:studentId/payments', require('./api/v1/payment').recordPayment);
