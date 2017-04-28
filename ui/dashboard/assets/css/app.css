@@ -63,6 +63,14 @@
     margin-bottom: 8px !important;
 }
 
+.tbQuillEditorInnerContainer {
+    background-color: white;
+}
+
+.tbQuillEditorOuterContainer {
+    min-height: 300px;
+}
+
 .tbDatePicker input {
     font-size: 16px !important;
 }

@@ -1,7 +1,8 @@
 <md-content class="md-padding">
-    <div id="editor">
-        <p>Hello World!</p>
-        <p>Some initial <strong>bold</strong> text</p>
-        <p><br></p>
+    <div class="tbQuillEditorOuterContainer"> <!-- Required so that the color palette etc. popups don't get chipped off when there's no scribble text yet -->
+        <div class="md-whiteframe-1dp tbQuillEditorInnerContainer">
+            <div id="editor">
+            </div>
+        </div>
     </div>
 </md-content>

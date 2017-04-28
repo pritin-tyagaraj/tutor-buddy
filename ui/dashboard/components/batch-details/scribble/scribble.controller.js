@@ -15,6 +15,25 @@
         // Initialize the editor
         $timeout(function() {
             quill = new Quill('#editor', {
+                modules: {
+                    toolbar: [
+                        [{ 'font': [] }],
+                        [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+
+                        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                        [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                        ['blockquote'],
+
+                        [{ 'header': 1 }],               // custom button values
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+
+                        [{ 'align': [] }],
+
+                        ['clean']                                         // remove formatting button
+                    ]
+                },
+                placeholder: 'You can scribble notes for this batch by typing here. Only you can see your scribbles.',
                 theme: 'snow'
             });
 
