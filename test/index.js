@@ -16,6 +16,7 @@ var aTestSetupQueries = [
     // Drop test tables
     'DROP TABLE IF EXISTS `users-test`',
     'DROP TABLE IF EXISTS `payments-test`',
+    'DROP TABLE IF EXISTS `scribbles-test`',
     'DROP TABLE IF EXISTS `tutors-test`',
     'DROP TABLE IF EXISTS `tutor_batch_map-test`',
     'DROP TABLE IF EXISTS `batch_student_map-test`',
@@ -30,6 +31,7 @@ var aTestSetupQueries = [
     'CREATE TABLE `batches-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `name` varchar(255) DEFAULT NULL, `subject` varchar(255) DEFAULT NULL, `address_text` text, `address_lat` float DEFAULT NULL, `address_lng` float DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `students-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `first_name` varchar(255) DEFAULT NULL, `last_name` varchar(255) DEFAULT NULL, `phone` varchar(255) DEFAULT NULL, `email` varchar(255) DEFAULT NULL, `verified` tinyint(1) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `payments-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `student_id` int(11) unsigned DEFAULT NULL, `batch_id` int(11) unsigned DEFAULT NULL, `mode` varchar(255) DEFAULT NULL, `amount` decimal(13,4) DEFAULT NULL, `currency` varchar(5) DEFAULT NULL, `time` datetime DEFAULT NULL, `student_comment` text, `tutor_comment` text, `system_comment` text, PRIMARY KEY (`id`), KEY `fk_batch_id_idx` (`batch_id`), KEY `fk_student_id_idx` (`student_id`), CONSTRAINT `fk_payments-test_batch_id` FOREIGN KEY (`batch_id`) REFERENCES `batches-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION, CONSTRAINT `fk_payments-test_student_id` FOREIGN KEY (`student_id`) REFERENCES `students-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE=InnoDB DEFAULT CHARSET=utf8',
+    'CREATE TABLE `scribbles-test` (`id` int(11) NOT NULL AUTO_INCREMENT, `batch_id` int(11) unsigned DEFAULT NULL, `content` text, PRIMARY KEY (`id`), KEY `fk_batchId_idx` (`batch_id`), CONSTRAINT `fk_batchId_test` FOREIGN KEY (`batch_id`) REFERENCES `batches-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8',
 
     // Add the required test data
     'INSERT INTO `users-test` (`id`, `first_name`, `last_name`, `email`, `facebook_id`, `session_id`, `tutor_profile_id`) VALUES (\'1\', \'TestTutorUserFirstName\', \'TestTutorUserLastName\', \'pritin.cool+tutor@gmail.com\', \'1717376528276312\', \'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoxLCJleHBpcmVzSW4iOiIzMGQiLCJpYXQiOjE0ODg5MDYyMjR9.cS2oHJAuPR5Dx6GrRTOxvUJEa7NTfwJqGVn8Yes1Bz0\', \'1\')',
@@ -68,6 +70,21 @@ var aTestSetupQueries = [
 
 
     	START TRANSACTION;
+            -- Delete all batch->student mappings for this batch
+            DELETE FROM \`batch_student_map-test\` WHERE batch_id = batchId;
+
+            -- Delete the tutor->batch mappings for this batch
+            DELETE FROM \`tutor_batch_map-test\` WHERE batch_id = batchId;
+
+            -- Delete payments
+            DELETE FROM \`payments-test\` WHERE batch_id = batchId;
+
+            -- Delete scribbles
+            DELETE FROM \`scribbles-test\` WHERE batch_id = batchId;
+
+            -- Delete the batch
+            DELETE FROM \`batches-test\` WHERE id = batchId;
+
     		-- For each student in this batch, check if the student belongs to any other batch. If no, then delete the student from the 'students' table.
             OPEN cursor_studentsNotInOtherBatches;
             batchStudentsLoop: LOOP
@@ -78,15 +95,6 @@ var aTestSetupQueries = [
 
                 DELETE FROM \`students-test\` WHERE id = eachBatchStudent;
             END LOOP;
-
-            -- Delete all batch->student mappings for this batch
-    		DELETE FROM \`batch_student_map-test\` WHERE batch_id = batchId;
-
-            -- Delete the tutor->batch mappings for this batch
-            DELETE FROM \`tutor_batch_map-test\` WHERE batch_id = batchId;
-
-    		-- Delete the batch
-            DELETE FROM \`batches-test\` WHERE id = batchId;
         COMMIT;
     END
     `,
@@ -200,7 +208,7 @@ describe('Static files with authentication', function() {
 
 describe('/user API', function() {
     it('GET /api/v1/user - Returns the profile of the current user', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/user')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -213,7 +221,7 @@ describe('/user API', function() {
 
 describe('/tutor API', function() {
     it('GET /api/v1/tutor - Returns 404 if no tutor profile is available for current user', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/tutor')
             .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
             .expect(404)
@@ -224,7 +232,7 @@ describe('/tutor API', function() {
     });
 
     it('POST /api/v1/tutor - Creates a tutor profile for the current user', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.post('/api/v1/tutor')
             .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
             .expect(201)
@@ -236,7 +244,7 @@ describe('/tutor API', function() {
     });
 
     it('GET /api/v1/tutor - Get the existing tutor profile for the current user', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/tutor')
             .set('Cookie', 'tutor-buddy-session=' + sTestUserJWT)
             .expect(200)
@@ -249,7 +257,7 @@ describe('/tutor API', function() {
     it('DELETE /tutor - Removes the tutor profile for the current user');
 
     it('POST /api/v1/tutor/:tutorId/batches - Creates a new batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.post('/api/v1/tutor/1/batches')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
@@ -272,7 +280,7 @@ describe('/tutor API', function() {
 
 describe('/batch API', function() {
     it('GET /api/v1/batches - Returns all batches of the current user', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/batches')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -286,7 +294,7 @@ describe('/batch API', function() {
     it('PUT /batch/:batchId - Edits a batch');
 
     it('DELETE /api/v1/batch/:batchId - Deletes a batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.del('/api/v1/batch/2')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -297,7 +305,7 @@ describe('/batch API', function() {
     });
 
     it('DELETE /api/v1/batch/:batchId - Trying to delete a batch that doesn\'t exist results in an error', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.del('/api/v1/batch/4')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(400)
@@ -308,7 +316,7 @@ describe('/batch API', function() {
     });
 
     it('GET /batch/:batchId/students - Lists students in a batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/batch/1/students')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -319,7 +327,7 @@ describe('/batch API', function() {
     });
 
     it('POST /api/v1/batch/:batchId/students - Adds students if the user is the owner of this batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.post('/api/v1/batch/1/students')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
@@ -335,7 +343,7 @@ describe('/batch API', function() {
     });
 
     it('POST /api/v1/batch/:batchId/students - Error if user tries to add students to a non-existent batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.post('/api/v1/batch/43/students')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
@@ -350,7 +358,7 @@ describe('/batch API', function() {
     });
 
     it('DELETE /api/v1/batch/:batchId/student/:studentId - Delete an existing student in a batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.del('/api/v1/batch/1/student/1')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -391,7 +399,7 @@ describe('Payment API', function(done) {
     });
 
     it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch does not exist', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.post('/api/v1/batch/999/student/1/payments')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
@@ -408,7 +416,7 @@ describe('Payment API', function(done) {
     });
 
     it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the student does not exist', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.post('/api/v1/batch/1/student/900/payments')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .send({
@@ -428,7 +436,7 @@ describe('Payment API', function(done) {
     it('POST /api/v1/batch/:batchId/student/:studentId/payments - Manually recording payment fails if the batch and student exist, but the student belongs to a different batch');
 
     it('GET /api/v1/batch/:batchId/payments - Get a list of payments for a batch if the user owns the batch', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/batch/1/payments')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -439,7 +447,7 @@ describe('Payment API', function(done) {
     });
 
     it('GET /api/v1/batch/:batchId/payments - Get a list of payments for a batch with a filter on student ID', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/batch/1/payments?student=2')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -453,7 +461,7 @@ describe('Payment API', function(done) {
     it('GET /api/v1/batch/batchId/payments - Error in getting list of payments if user doesn\'t own the batch');
 
     it('GET /api/v1/batch/batchId/payments - Error in getting list of payments if batch doesn\'t exist', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.get('/api/v1/batch/4/payments')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(404)
@@ -464,7 +472,7 @@ describe('Payment API', function(done) {
     });
 
     it('DELETE /api/v1/payment/:paymentId - Delete a payment if authorized', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.del('/api/v1/payment/1')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(200)
@@ -475,7 +483,7 @@ describe('Payment API', function(done) {
     });
 
     it('DELETE /api/v1/payment/:paymentId - Delete of payment fails if payment ID doesn\'t exist', function(done) {
-        this.timeout(5000);
+        this.timeout(8000);
         server.del('/api/v1/payment/999')
             .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
             .expect(403)
@@ -486,4 +494,31 @@ describe('Payment API', function(done) {
     });
 
     it('DELETE /api/v1/payment/:paymentId - Delete of payment fails if user isn\'t authorized');
+});
+
+describe('Scribble API', function(done) {
+    it('GET /api/v1/batch/:batchId/scribble - Returns the existing scribble test for a batch', function(done) {
+        this.timeout(8000);
+        server.get('/api/v1/batch/3/scribble')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
+
+    it('POST /api/v1/batch/:batchId/scribble - Updates the scribble for a given batch', function(done) {
+        this.timeout(8000);
+        server.post('/api/v1/batch/3/scribble')
+            .set('Cookie', 'tutor-buddy-session=' + sTestTutorUserJWT)
+            .send({
+                content: "My sample content"
+            })
+            .expect(200)
+            .end(function(err, res) {
+                if (err) throw err;
+                done();
+            });
+    });
 });

@@ -11,6 +11,7 @@ var Table = {
     STUDENTS: (process.env.mode === 'TEST') ? '`students-test`' : '`students`',
     BATCHES: (process.env.mode === 'TEST') ? '`batches-test`' : '`batches`',
     PAYMENTS: (process.env.mode === 'TEST') ? '`payments-test`' : '`payments`',
+    SCRIBBLES: (process.env.mode === 'TEST') ? '`scribbles-test`' : '`scribbles`',
     TUTOR_BATCH_MAP: (process.env.mode === 'TEST') ? '`tutor_batch_map-test`' : '`tutor_batch_map`',
     BATCH_STUDENT_MAP: (process.env.mode === 'TEST') ? '`batch_student_map-test`' : '`batch_student_map`'
 };
@@ -216,20 +217,24 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
             connection.query('INSERT INTO ' + Table.TUTOR_BATCH_MAP + ' (`tutor_id`, `batch_id`) VALUES (?, ?)', [tutorId, batchId], (err) => {
                 if (err) return cb(err);
 
-                // OK done!
-                connection.commit((err) => {
-                    if (err) {
-                        connection.rollback(() => {
-                            winston.error('model: Error while committing transaction in createBatch');
-                            throw err;
-                        })
-                    }
+                // Create an empty entry in the scribbles table
+                connection.query('INSERT INTO ' + Table.SCRIBBLES + ' (`batch_id`) VALUES (?)', [batchId], (err) => {
+                    if (err) return cb(err);
 
-                    connection.end();
-                    cb(null, batchId);
+                    // OK done!
+                    connection.commit((err) => {
+                        if (err) {
+                            connection.rollback(() => {
+                                winston.error('model: Error while committing transaction in createBatch');
+                                throw err;
+                            })
+                        }
+
+                        connection.end();
+                        cb(null, batchId);
+                    });
                 });
-
-            })
+            });
         });
     });
 }
@@ -355,6 +360,23 @@ function deletePayment(paymentId, cb) {
     });
 }
 
+function updateScribbleForBatch(batchId, scribbleContent, cb) {
+    executeQuery('UPDATE ' + Table.SCRIBBLES + ' SET `content` = ? WHERE `batch_id` = ?', [scribbleContent, batchId], cb, () => {
+        cb();
+    });
+}
+
+function getScribbleForBatch(batchId, cb) {
+    executeQuery('SELECT `content` FROM ' + Table.SCRIBBLES + ' WHERE `batch_id` = ?', [batchId], cb, (result) => {
+        var content = result[0].content;
+        if(!content) {
+            content = "";
+        }
+
+        cb(null, content);
+    });
+}
+
 module.exports = {
     user: {
         getUserProfile: getUserProfile,
@@ -385,5 +407,9 @@ module.exports = {
         getPaymentsForBatch: getPaymentsForBatch,
         getPaymentOwner: getPaymentOwner,
         deletePayment: deletePayment
+    },
+    scribble: {
+        updateScribbleForBatch: updateScribbleForBatch,
+        getScribbleForBatch: getScribbleForBatch,
     }
 };
