@@ -77,7 +77,10 @@ var aTestSetupQueries = [
             DELETE FROM \`tutor_batch_map-test\` WHERE batch_id = batchId;
 
             -- Delete payments
-            DELETE FROM payments WHERE batch_id = batchId;
+            DELETE FROM \`payments-test\` WHERE batch_id = batchId;
+
+            -- Delete scribbles
+            DELETE FROM \`scribbles-test\` WHERE batch_id = batchId;
 
             -- Delete the batch
             DELETE FROM \`batches-test\` WHERE id = batchId;
