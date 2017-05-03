@@ -46,6 +46,11 @@ module.exports = {
         var batchName = req.body.name;
         var batchSubject = req.body.subject;
         var batchAddressText = req.body.address_text;
+        var batchRecurrenceDays = req.body.recur_days;
+        var batchRecurrenceStart = req.body.recur_start;
+        var batchRecurrenceEnd = req.body.recur_end;
+        var batchStartTime = req.body.start_time; //Time of day for beginning of class
+        var batchEndTime = req.body.end_time; //Time of day for end of class
 
         // Is the user allowed to create a batch for this tutor? Currently, the tutor profile should be mapped to the user for this to be allowed.
         winston.info('Fetching tutor profile for user %s', req.user.id);
@@ -72,7 +77,7 @@ module.exports = {
 
             // Create a new batch
             winston.info('Trigger creation of new batch for user %s, tutor ID %s', req.user.id, dbTutorProfile.id);
-            model.batch.createBatch(tutorId, batchName, batchSubject, batchAddressText, (err, batchId) => {
+            model.batch.createBatch(tutorId, batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime, (err, batchId) => {
                 if (err) throw err;
 
                 //Done!
