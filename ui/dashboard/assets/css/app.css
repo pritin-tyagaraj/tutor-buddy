@@ -74,3 +74,8 @@
 .tbDatePicker input {
     font-size: 16px !important;
 }
+
+.tbDialogContentMargin {
+    margin-right: 15px;
+    margin-left: 10px;
+}

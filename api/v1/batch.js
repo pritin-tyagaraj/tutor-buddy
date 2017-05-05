@@ -46,11 +46,11 @@ module.exports = {
         var batchName = req.body.name;
         var batchSubject = req.body.subject;
         var batchAddressText = req.body.address_text;
-        var batchRecurrenceDays = req.body.recur_days;
+        var batchRecurrenceDays = req.body.recur_days.join(''); // Convert [1, 2, 5] to "125" for storing in a single column
         var batchRecurrenceStart = req.body.recur_start;
         var batchRecurrenceEnd = req.body.recur_end;
-        var batchStartTime = req.body.start_time; //Time of day for beginning of class
-        var batchEndTime = req.body.end_time; //Time of day for end of class
+        var batchStartTime = req.body.start_time + "00"; //Time of day for beginning of class
+        var batchEndTime = req.body.end_time + "00"; //Time of day for end of class. "00" added due to the way MySQL will interpret this (See https://dev.mysql.com/doc/refman/5.5/en/time.html)
 
         // Is the user allowed to create a batch for this tutor? Currently, the tutor profile should be mapped to the user for this to be allowed.
         winston.info('Fetching tutor profile for user %s', req.user.id);
