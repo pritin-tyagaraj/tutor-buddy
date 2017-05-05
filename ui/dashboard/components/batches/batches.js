@@ -73,6 +73,19 @@ angular.module('batches', ['ngMaterial', 'ngRoute', 'ngMdIcons', 'material.compo
 
         // Controller for the 'Create batch' dialog
         function NewBatchDialogController($scope, $mdDialog) {
+            // Whenever the class time selection is changed, validate whether start time < end time
+            $scope.validateClassTimeRange = function() {
+                var classTimeRangeValid = (!$scope.batch.start_time || !$scope.batch.end_time) || ($scope.batch.end_time > $scope.batch.start_time)
+                $scope.newBatchForm.classStartTime.$setValidity('classTimeRange', classTimeRangeValid);
+                $scope.newBatchForm.classEndTime.$setValidity('classTimeRange', classTimeRangeValid);
+            }
+
+            $scope.validateRecurrenceDateRange = function() {
+                var recurrenceDateRangeValid = (!$scope.batch.recur_start || !$scope.batch.recur_end) || ($scope.batch.recur_end > $scope.batch.recur_start);
+                $scope.newBatchForm.recurrenceStart.$setValidity('recurrenceDateRange', recurrenceDateRangeValid);
+                $scope.newBatchForm.recurrenceEnd.$setValidity('recurrenceDateRange', recurrenceDateRangeValid);
+            }
+
             $scope.cancel = function() {
                 $mdDialog.cancel();
             };

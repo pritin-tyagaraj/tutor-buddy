@@ -1,5 +1,18 @@
 var apiConnector = angular.module('apiConnector');
 apiConnector.factory('tbBatchService', function($http, $q) {
+    // Helepr function to get a YYYY-MM-DD from a Date object
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
     return {
         /**
          * Gets the list of existing batches for the current user.
@@ -19,6 +32,14 @@ apiConnector.factory('tbBatchService', function($http, $q) {
          */
         createBatch: function(tutorId, batchDetails) {
             var deferred = $q.defer();
+
+            // Get only the 'date' part (YYYY-MM-DD) of recur_start and recur_end
+            batchDetails.recur_start = formatDate(batchDetails.recur_start);
+            if(batchDetails.recur_end) {
+                batchDetails.recur_end = formatDate(batchDetails.recur_end);
+            }
+
+            // Trigger the POST
             $http.post('/api/v1/tutor/' + tutorId + '/batches', batchDetails).then(function(response) {
                 deferred.resolve(response.data);
             }, function(data, status, headers, config) {

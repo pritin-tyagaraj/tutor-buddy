@@ -28,7 +28,7 @@ var aTestSetupQueries = [
     'CREATE TABLE `tutors-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `tutor_batch_map-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `tutor_id` int(11) DEFAULT NULL, `batch_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `batch_student_map-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `batch_id` int(11) DEFAULT NULL, `student_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
-    'CREATE TABLE `batches-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `name` varchar(255) DEFAULT NULL, `subject` varchar(255) DEFAULT NULL, `address_text` text, `address_lat` float DEFAULT NULL, `address_lng` float DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
+    'CREATE TABLE `batches-test` ( `id` int(11) unsigned NOT NULL AUTO_INCREMENT, `name` varchar(255) DEFAULT NULL, `subject` varchar(255) DEFAULT NULL, `address_text` text, `address_lat` float DEFAULT NULL, `address_lng` float DEFAULT NULL, `recur_days` varchar(7) DEFAULT NULL, `recur_start` date DEFAULT NULL, `recur_end` date DEFAULT NULL, `start_time` time DEFAULT NULL, `end_time` time DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `students-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `first_name` varchar(255) DEFAULT NULL, `last_name` varchar(255) DEFAULT NULL, `phone` varchar(255) DEFAULT NULL, `email` varchar(255) DEFAULT NULL, `verified` tinyint(1) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `payments-test` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `student_id` int(11) unsigned DEFAULT NULL, `batch_id` int(11) unsigned DEFAULT NULL, `mode` varchar(255) DEFAULT NULL, `amount` decimal(13,4) DEFAULT NULL, `currency` varchar(5) DEFAULT NULL, `time` datetime DEFAULT NULL, `student_comment` text, `tutor_comment` text, `system_comment` text, PRIMARY KEY (`id`), KEY `fk_batch_id_idx` (`batch_id`), KEY `fk_student_id_idx` (`student_id`), CONSTRAINT `fk_payments-test_batch_id` FOREIGN KEY (`batch_id`) REFERENCES `batches-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION, CONSTRAINT `fk_payments-test_student_id` FOREIGN KEY (`student_id`) REFERENCES `students-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE=InnoDB DEFAULT CHARSET=utf8',
     'CREATE TABLE `scribbles-test` (`id` int(11) NOT NULL AUTO_INCREMENT, `batch_id` int(11) unsigned DEFAULT NULL, `content` text, PRIMARY KEY (`id`), KEY `fk_batchId_idx` (`batch_id`), CONSTRAINT `fk_batchId_test` FOREIGN KEY (`batch_id`) REFERENCES `batches-test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8',
@@ -263,7 +263,12 @@ describe('/tutor API', function() {
             .send({
                 name: "BatchName",
                 address_text: "BatchAddress",
-                subject: "BatchSubject"
+                subject: "BatchSubject",
+                recur_days: [1, 3], //Monday and Wednesday
+                recur_start: "2017-01-01",
+                recur_end: "2017-12-31",
+                start_time: "1500",
+                end_time: "1630"
             })
             .expect(201)
             .expect('resource', /[a-zA-Z0-9]/)

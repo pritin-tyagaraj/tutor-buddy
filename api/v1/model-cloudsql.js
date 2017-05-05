@@ -198,7 +198,7 @@ function getBatchesForTutor(tutorId, cb) {
 /**
  * Create a new batch for a tutor and maps it to the tutor
  */
-function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
+function createBatch(tutorId, batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime, cb) {
     const connection = getConnection();
     connection.beginTransaction(function(err) {
         if (err) {
@@ -209,7 +209,7 @@ function createBatch(tutorId, batchName, batchSubject, batchAddressText, cb) {
         }
 
         // Create a new batch
-        connection.query('INSERT INTO ' + Table.BATCHES + ' (`name`, `subject`, `address_text`) VALUES (?, ?, ?)', [batchName, batchSubject, batchAddressText], (err, result) => {
+        connection.query('INSERT INTO ' + Table.BATCHES + ' (`name`, `subject`, `address_text`, `recur_days`, `recur_start`, `recur_end`, `start_time`, `end_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime], (err, result) => {
             if (err) return cb(err);
 
             // Map this batch to the tutor

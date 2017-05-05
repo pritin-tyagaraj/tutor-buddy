@@ -14,8 +14,9 @@
     <!-- Dialog content -->
     <md-dialog-content>
           <md-content layout-padding>
-              <div>
+              <div class="tbDialogContentMargin">
                   <form>
+                      <h2>General Information</h2>
                       <div layout-gt-xs="row">
                           <md-input-container class="md-block" flex-gt-xs>
                               <label>Batch Name</label>
@@ -32,19 +33,109 @@
                               </div>
                           </md-input-container>
                       </div>
-                      <md-input-container class="md-block" flex-gt-sm>
-                          <label>Number of students</label>
-                          <input name="size" required min="0" max="100" type="number" ng-model="batch.size">
-                          <div ng-messages="newBatchForm.size.$error">
-                              <div ng-message="required">How many students will you have in this batch? (You can change this later)</div>
-                              <div ng-message="max">That's a lot of students! Set something within 100. You can change this later</div>
-                          </div>
-                      </md-input-container>
+                    <div layout-gt-xs="row">
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <label>From</label>
+                            <md-select name="classStartTime" required ng-model="batch.start_time" ng-change="validateClassTimeRange()">
+                                <md-option ng-value="0800">8.00 am</md-option>
+                                <md-option ng-value="0830">8.30 am</md-option>
+                                <md-option ng-value="0900">9.00 am</md-option>
+                                <md-option ng-value="0930">9.30 am</md-option>
+                                <md-option ng-value="1000">10.00 am</md-option>
+                                <md-option ng-value="1030">10.30 am</md-option>
+                                <md-option ng-value="1100">11.00 am</md-option>
+                                <md-option ng-value="1130">11.30 am</md-option>
+                                <md-option ng-value="1200">12.00 pm</md-option>
+                                <md-option ng-value="1230">12.30 pm</md-option>
+                                <md-option ng-value="1300">1.00 pm</md-option>
+                                <md-option ng-value="1330">1.30 pm</md-option>
+                                <md-option ng-value="1400">2.00 pm</md-option>
+                                <md-option ng-value="1430">2.30 pm</md-option>
+                                <md-option ng-value="1500">3.00 pm</md-option>
+                                <md-option ng-value="1530">3.30 pm</md-option>
+                                <md-option ng-value="1600">4.00 pm</md-option>
+                                <md-option ng-value="1630">4.30 pm</md-option>
+                                <md-option ng-value="1700">5.00 pm</md-option>
+                                <md-option ng-value="1730">5.30 pm</md-option>
+                                <md-option ng-value="1800">6.00 pm</md-option>
+                                <md-option ng-value="1830">6.30 pm</md-option>
+                                <md-option ng-value="1900">7.00 pm</md-option>
+                                <md-option ng-value="1930">7.30 pm</md-option>
+                                <md-option ng-value="2000">8.00 pm</md-option>
+                            </md-select>
+                            <div ng-messages="newBatchForm.classStartTime.$error">
+                                <div ng-message="classTimeRange">Your batch's class start time should be earlier than its end time</div>
+                            </div>
+                        </md-input-container>
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <label>Till</label>
+                            <md-select name="classEndTime" required ng-model="batch.end_time" ng-change="validateClassTimeRange()">
+                                <md-option ng-value="0830">8.30 am</md-option>
+                                <md-option ng-value="0900">9.00 am</md-option>
+                                <md-option ng-value="0930">9.30 am</md-option>
+                                <md-option ng-value="1000">10.00 am</md-option>
+                                <md-option ng-value="1030">10.30 am</md-option>
+                                <md-option ng-value="1100">11.00 am</md-option>
+                                <md-option ng-value="1130">11.30 am</md-option>
+                                <md-option ng-value="1200">12.00 pm</md-option>
+                                <md-option ng-value="1230">12.30 pm</md-option>
+                                <md-option ng-value="1300">1.00 pm</md-option>
+                                <md-option ng-value="1330">1.30 pm</md-option>
+                                <md-option ng-value="1400">2.00 pm</md-option>
+                                <md-option ng-value="1430">2.30 pm</md-option>
+                                <md-option ng-value="1500">3.00 pm</md-option>
+                                <md-option ng-value="1530">3.30 pm</md-option>
+                                <md-option ng-value="1600">4.00 pm</md-option>
+                                <md-option ng-value="1630">4.30 pm</md-option>
+                                <md-option ng-value="1700">5.00 pm</md-option>
+                                <md-option ng-value="1730">5.30 pm</md-option>
+                                <md-option ng-value="1800">6.00 pm</md-option>
+                                <md-option ng-value="1830">6.30 pm</md-option>
+                                <md-option ng-value="1900">7.00 pm</md-option>
+                                <md-option ng-value="1930">7.30 pm</md-option>
+                                <md-option ng-value="2000">8.00 pm</md-option>
+                                <md-option ng-value="2030">8.30 pm</md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Number of students</label>
+                        <input name="size" required min="0" max="100" type="number" ng-model="batch.size">
+                        <div ng-messages="newBatchForm.classEndTime.$error">
+                            <div ng-message="classTimeRange">Start time should be earlier than the end time</div>
+                        </div>
+                    </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                      <label>Venue</label>
+                      <input ng-model="batch.address_text">
+                  </md-input-container>
 
-                      <md-input-container class="md-block" flex-gt-sm>
-                          <label>Venue</label>
-                          <input ng-model="batch.address_text">
-                      </md-input-container>
+                      <h2>Recurrence</h2>
+                      <md-content layout="row">
+                           <md-input-container class="md-block" flex-gt-sm>
+                              <label>Classes occur every</label>
+                              <md-select required multiple ng-model="batch.recur_days">
+                                  <md-option ng-value="1">Monday</md-option>
+                                  <md-option ng-value="2">Tuesday</md-option>
+                                  <md-option ng-value="3">Wednesday</md-option>
+                                  <md-option ng-value="4">Thursday</md-option>
+                                  <md-option ng-value="5">Friday</md-option>
+                                  <md-option ng-value="6">Saturday</md-option>
+                                  <md-option ng-value="7">Sunday</md-option>
+                              </md-select>
+                          </md-input-container>
+                          <md-input-container class="md-block">
+                              <label>Starting</label>
+                              <md-datepicker name="recurrenceStart" equired ng-model="batch.recur_start" ng-change="validateRecurrenceDateRange()" md-placeholder="Enter date"></md-datepicker>
+                              <div ng-messages="newBatchForm.recurrenceStart.$error">
+                                  <div ng-message="recurrenceDateRange">Start date must be earlier than end date</div>
+                              </div>
+                          </md-input-container>
+                          <md-input-container class="md-block">
+                              <label>Ending</label>
+                              <md-datepicker name="recurrenceEnd" ng-model="batch.recur_end" ng-change="validateRecurrenceDateRange()" md-placeholder="Never"></md-datepicker>
+                          </md-input-container>
+                      </md-content>
                   </form>
               </div>
           </md-content>
