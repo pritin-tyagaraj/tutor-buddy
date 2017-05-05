@@ -264,11 +264,11 @@ describe('/tutor API', function() {
                 name: "BatchName",
                 address_text: "BatchAddress",
                 subject: "BatchSubject",
-                recur_days: "13", //Monday and Wednesday
+                recur_days: [1, 3], //Monday and Wednesday
                 recur_start: "2017-01-01",
                 recur_end: "2017-12-31",
-                start_time: "15:00:00",
-                end_time: "16:30:00"
+                start_time: "1500",
+                end_time: "1630"
             })
             .expect(201)
             .expect('resource', /[a-zA-Z0-9]/)
