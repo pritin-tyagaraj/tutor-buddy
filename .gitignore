@@ -2,3 +2,7 @@
 /npm-debug.log
 /app.yaml
 /coverage
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

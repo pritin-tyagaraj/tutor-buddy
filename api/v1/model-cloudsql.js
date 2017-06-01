@@ -27,16 +27,14 @@ var StoredProcedure = {
  */
 function getConnection() {
     const options = {
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: 'tutor-buddy',
+        user: process.env.RDS_USERNAME,
+        password: process.env.RDS_PASSWORD,
+        database: process.env.RDS_DB_NAME,
+        host: process.env.RDS_HOSTNAME,
+        port: process.env.RDS_PORT,
         multipleStatements: true,
         dateStrings: 'date'
     };
-
-    if ((process.env.MODE !== 'TEST') && (process.env.MODE !== 'DEV')) {
-        options.socketPath = `/cloudsql/${process.env.DB_INSTANCE}`;
-    }
 
     return mysql.createConnection(options);
 }
