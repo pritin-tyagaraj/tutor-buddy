@@ -3,6 +3,7 @@ const https = require('https');
 const util = require('util');
 const winston = require('winston');
 const model = require(`./model-cloudsql`);
+const userModel = require('./model/user');
 const session = require('../auth/session');
 
 /**
@@ -25,7 +26,7 @@ function createNewFacebookUser(facebook_id, access_token, cb) {
 
             // Write to DB and call cb!
             winston.info('Creating new user entry for FB user %s (%s %s)', facebook_id, firstName, lastName)
-            model.user.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
+            userModel.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
         });
     });
 }
@@ -35,7 +36,7 @@ module.exports = {
      * Returns details of the currently logged in user
      */
     getCurrentUser: function(req, res, next) {
-        model.user.getUserProfile(req.user.id, (err, result) => {
+        userModel.getUserProfile(req.user.id, (err, result) => {
             if (err) {
                 throw err;
             }
@@ -48,7 +49,7 @@ module.exports = {
      */
     createTutorProfile: function(req, res, next) {
         // Does the user already have a tutor profile? If yes, we can't create another.
-        model.user.isUserTutor(req.user.id, (err, tutorProfileExists) => {
+        userModel.isUserTutor(req.user.id, (err, tutorProfileExists) => {
             if (err) {
                 throw err;
             }
@@ -80,7 +81,7 @@ module.exports = {
      */
     getTutorProfile: function(req, res, next) {
         //Is the user even a tutor?
-        model.user.isUserTutor(req.user.id, (err, isTutor) => {
+        userModel.isUserTutor(req.user.id, (err, isTutor) => {
             if (err) throw err;
             if (!isTutor) {
                 winston.error('getTutorProfile called for user who isn\'t a tutor');
@@ -111,7 +112,7 @@ module.exports = {
         }
 
         winston.info('Check if FB ID %s is returning or is new user', facebook_id);
-        model.user.readByFacebookId(facebook_id, (err, user) => {
+        userModel.readByFacebookId(facebook_id, (err, user) => {
             if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!
                 winston.info('User is a returning user. Creating new entry in user table');

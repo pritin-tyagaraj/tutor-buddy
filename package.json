@@ -58,7 +58,7 @@
     "nodejs-repo-tools": "git+https://git@github.com/GoogleCloudPlatform/nodejs-repo-tools.git",
     "proxyquire": "^1.7.10",
     "should": "^11.2.0",
-    "sinon": "^1.17.7",
+    "sinon": "^2.1.0",
     "supertest": "^3.0.0"
   },
   "engines": {

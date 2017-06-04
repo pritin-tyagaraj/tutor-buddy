@@ -1,16 +1,11 @@
 const jwt = require('jsonwebtoken');
 const winston = require('winston');
-const jwtSecret = 'fc143f1edcc846edbc6c7e2302be5602';
 const model = require(`../v1/model-cloudsql`);
-
-function createNewJWTToken(userId) {
-    return jwt.sign({
-        user: userId,
-        expiresIn: '30d'
-    }, jwtSecret);
-}
+const userModel = require('../v1/model/user');
 
 module.exports = {
+    jwtSecret: 'fc143f1edcc846edbc6c7e2302be5602',
+
     /**
      * Instructs the browser to set a session cookie, and redirects to the post-login landing page.
      */
@@ -31,8 +26,12 @@ module.exports = {
      * Creates a new session for the user in the DB and returns the created session ID
      */
     createNewServerSessionForUser: function(userId, cb) {
-        var sessionId = createNewJWTToken(userId);
-        model.user.createNewSession(userId, sessionId, (err) => {
+        var sessionId = jwt.sign({
+            user: userId,
+            expiresIn: '30d'
+        }, this.jwtSecret);
+
+        userModel.createNewSession(userId, sessionId, (err) => {
             if (err) {
                 winston.error(err);
                 cb(err);
@@ -49,11 +48,12 @@ module.exports = {
         // Basic checks
         if (!req.user) {
             winston.error('Trying to log out a user, but who\'s logged in!?');
+            return next();
         }
 
         // Clear the server session
         winston.info('Triggering logout for user %s', req.user.id);
-        model.user.terminateSession(req.user.id, (err) => {
+        userModel.terminateSession(req.user.id, (err) => {
             if (err) {
                 winston.error(err);
                 throw err;
@@ -75,7 +75,7 @@ module.exports = {
      */
     parseJWTToken: function(sToken) {
         try {
-            var decoded = jwt.verify(sToken, jwtSecret);
+            var decoded = jwt.verify(sToken, this.jwtSecret);
         } catch (err) {
             winston.error('Error parsing JWT: %s | %s', err.name, err.message);
             throw err;

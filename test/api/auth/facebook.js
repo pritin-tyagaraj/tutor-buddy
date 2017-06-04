@@ -94,7 +94,7 @@ describe('=== Facebook Authentication ===', function() {
                 });
 
             // Stub the call to the 'user' API method 'loginOrCreateUser'. The API layer will be tested with separate tests
-            sinon.stub(user, 'loginOrCreateUser', function(userId, accessToken, response, next) {
+            sinon.stub(user, 'loginOrCreateUser').callsFake(function(userId, accessToken, response, next) {
                 next();
             });
         });

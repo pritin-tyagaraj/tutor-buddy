@@ -16,3 +16,4 @@ winston.add(winston.transports.Console, {
 // Run the tests
 require('./api/auth/facebook');
 require('./api/auth/whitelist');
+require('./api/auth/session');
