@@ -1,8 +1,6 @@
-"use strict";
 const authWhitelist = require('../auth/whitelist.js');
 const winston = require('winston');
 const url = require('url');
-const errors = require('restify-errors');
 const session = require('../auth/session');
 
 module.exports = {
@@ -48,9 +46,5 @@ module.exports = {
             id: decodedToken.user
         };
         return next();
-    },
-
-    checkUserAuthorization: function(req, res, next) {
-        next();
     }
 };

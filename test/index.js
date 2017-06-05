@@ -18,3 +18,4 @@ require('./api/auth/facebook');
 require('./api/auth/config');
 require('./api/auth/whitelist');
 require('./api/auth/session');
+require('./api/middleware/validateRequest');
