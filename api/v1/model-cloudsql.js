@@ -4,62 +4,6 @@ const extend = require('lodash').assign;
 const mysql = require('mysql');
 const winston = require('winston');
 
-function getTutorProfile(userId, cb) {
-    executeQuery('SELECT t.* FROM (SELECT * FROM ' + Table.TUTORS + ') AS t INNER JOIN (SELECT * FROM ' + Table.USERS + ' WHERE id = ?) AS u WHERE t.id = u.tutor_profile_id', [userId], cb, (results) => {
-        cb(null, results[0]);
-    });
-}
-
-/**
- * Creates a new tutor profile ID and maps it to the specified user.
- */
-function createTutorProfile(userId, cb) {
-    const connection = getConnection();
-    connection.beginTransaction(function(err) {
-        if (err) {
-            winston.error('model: Error while starting transaction for createTutorProfile', {
-                err: err
-            });
-            throw err;
-        }
-
-        // Create a new tutor profile
-        connection.query('INSERT INTO ' + Table.TUTORS + ' VALUES()', (err, result) => {
-            if (err) {
-                connection.rollback(() => {
-                    winston.error('model: Error while inserting into tutors for creating a new tutor profile');
-                    throw err;
-                });
-            }
-
-            // Map the created tutor profile with the current user
-            var createdTutorProfile = result.insertId;
-            connection.query('UPDATE ' + Table.USERS + ' SET `tutor_profile_id` = ? WHERE `id` = ?', [createdTutorProfile, userId], (err, result) => {
-                if (err) {
-                    connection.rollback(() => {
-                        winston.error('model: Error while mapping created tutor profile ID %s to user %s', createdTutorProfile, userId);
-                        throw err;
-                    });
-                }
-
-                // Commit the transaction
-                connection.commit((err) => {
-                    if (err) {
-                        connection.rollback(() => {
-                            winston.error('model: Error while committing transaction in createTutorProfile');
-                            throw err;
-                        })
-                    }
-
-                    //Return the created tutor profile ID
-                    connection.end();
-                    cb(null, createdTutorProfile);
-                })
-            });
-        });
-    });
-}
-
 /**
  * Returns the existing batches for the provided user.
  */
@@ -252,10 +196,6 @@ function getScribbleForBatch(batchId, cb) {
 }
 
 module.exports = {
-    tutor: {
-        getTutorProfile: getTutorProfile,
-        createTutorProfile: createTutorProfile
-    },
     batch: {
         getBatchesForTutor: getBatchesForTutor,
         createBatch: createBatch,
