@@ -82,7 +82,7 @@ module.exports = {
                     }
 
                     //Done!
-                    res.send(200);
+                    res.json(200);
                 });
             }
         });
