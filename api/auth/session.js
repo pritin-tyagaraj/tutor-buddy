@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const winston = require('winston');
-const model = require(`../v1/model-cloudsql`);
 const userModel = require('../v1/model/user');
 
 module.exports = {

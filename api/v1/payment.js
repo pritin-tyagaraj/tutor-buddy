@@ -1,5 +1,6 @@
 'use strict';
-const model = require(`./model-cloudsql`);
+const batchModel = require('./model/batch');
+const paymentModel = require('./model/payment');
 const winston = require('winston');
 const Promise = require("node-promise").Promise;
 const all = require("node-promise").all;
@@ -24,7 +25,7 @@ module.exports = {
 
         //Check #1
         var validateBatchOwnership = new Promise();
-        model.batch.getBatchOwner(batchId, function(err, owner) {
+        batchModel.getBatchOwner(batchId, function(err, owner) {
             if (err) {
                 winston.error('An error occurred in getBatchOwner', {
                     err: err
@@ -33,7 +34,7 @@ module.exports = {
             }
 
             if (!owner) {
-                res.json(400, {
+                return res.json(400, {
                     message: 'Are you sure batch ID ' + batchId + ' exists?'
                 });
             }
@@ -52,7 +53,7 @@ module.exports = {
 
         // Check #2
         var validateStudentMembership = new Promise();
-        model.batch.hasStudent(batchId, studentId, function(err, result) {
+        batchModel.hasStudent(batchId, studentId, function(err, result) {
             if (err) {
                 winston.error('An error occurred in hasStudent', {
                     err: err
@@ -74,7 +75,7 @@ module.exports = {
         // Checks done.
         all(validateStudentMembership, validateBatchOwnership).then(function() {
             winston.info('User %s is allowed to record payments for batch %s', userId, batchId);
-            model.payment.recordPayment(studentId, batchId, paymentMode, paymentAmount, paymentCurrency, paymentTime, tutorComment, (err) => {
+            paymentModel.recordPayment(studentId, batchId, paymentMode, paymentAmount, paymentCurrency, paymentTime, tutorComment, (err) => {
                 if (err) {
                     winston.error('An error occurred in recordPayment', {
                         err: err
@@ -82,17 +83,19 @@ module.exports = {
 
                     // Check for foreign key violation
                     if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.code === 'ER_NO_REFERENCED_ROW') {
-                        return res.json(400, {
+                        res.json(400, {
                             message: 'Invalid Batch ID or Student ID'
                         });
                     } else {
-                        return res.json(500);
+                        res.json(500);
                     }
+                    return next();
                 }
 
                 //Done!
                 winston.info('Payment of %s %s recorded by user %s for batch %s', paymentCurrency, paymentAmount, userId, batchId);
-                res.send(201);
+                res.json(201);
+                return next();
             });
         });
     },
@@ -108,7 +111,7 @@ module.exports = {
         var studentFilter = req.query.student;
 
         // Check if user is the owner of this batch. If yes, let him see payment details
-        model.batch.getBatchOwner(batchId, function(err, owner) {
+        batchModel.getBatchOwner(batchId, function(err, owner) {
             if (err) {
                 winston.error('An error occurred in getBatchOwner within getPaymentsForBatch', {
                     err: err
@@ -132,11 +135,12 @@ module.exports = {
                 return next();
             }
 
-            model.payment.getPaymentsForBatch(batchId, studentFilter, (err, result) => {
+            paymentModel.getPaymentsForBatch(batchId, studentFilter, (err, result) => {
                 if (err) {
                     winston.error('An error occurred in getPaymentsForBatch', {
                         err: err
                     });
+                    return res.json(500);
                 }
 
                 // Done!
@@ -153,7 +157,7 @@ module.exports = {
         var paymentId = req.params.paymentId;
         var userId = req.user.id;
 
-        model.payment.getPaymentOwner(paymentId, function(err, owner) {
+        paymentModel.getPaymentOwner(paymentId, function(err, owner) {
             if(err) {
                 winston.error('An error occurred in getBatchOwner within getPaymentsForBatch', {
                     err: err
@@ -171,11 +175,12 @@ module.exports = {
             }
 
             // Checks done. Proceed to delete the payment entry.
-            model.payment.deletePayment(paymentId, (err, result) => {
+            paymentModel.deletePayment(paymentId, (err, result) => {
                 if (err) {
                     winston.error('An error occurred in deletePayment', {
                         err: err
                     });
+                    return res.json(500);
                 }
 
                 // No error? Payment was deleted!

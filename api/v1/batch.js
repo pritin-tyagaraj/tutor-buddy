@@ -1,5 +1,6 @@
 'use strict';
-const model = require(`./model-cloudsql`);
+const tutorModel = require('./model/tutor');
+const batchModel = require('./model/batch');
 const winston = require('winston');
 const user = require('./user')
 
@@ -7,7 +8,7 @@ module.exports = {
     getBatchesForUser: function(req, res, next) {
         winston.info('Getting list of batches for user %s', req.user.id);
         var userId = req.user.id;
-        model.tutor.getTutorProfile(userId, (err, dbTutorProfile) => {
+        tutorModel.getTutorProfile(userId, (err, dbTutorProfile) => {
             if (err) {
                 winston.error("Error in getBatchesForUser", {
                     err: err
@@ -26,7 +27,7 @@ module.exports = {
             var tutorId = dbTutorProfile.id;
             winston.info('User\'s tutor profile ID is %s', tutorId);
             winston.info('Getting list of batches for tutor %s', tutorId);
-            model.batch.getBatchesForTutor(tutorId, (err, results) => {
+            batchModel.getBatchesForTutor(tutorId, (err, results) => {
                 if (err) {
                     winston.error("Error in getBatchesForTutor", {
                         err: err
@@ -54,7 +55,7 @@ module.exports = {
 
         // Is the user allowed to create a batch for this tutor? Currently, the tutor profile should be mapped to the user for this to be allowed.
         winston.info('Fetching tutor profile for user %s', req.user.id);
-        model.tutor.getTutorProfile(userId, (err, dbTutorProfile) => {
+        tutorModel.getTutorProfile(userId, (err, dbTutorProfile) => {
             if (err) throw err;
 
             // Does the user have a tutor profile?
@@ -77,7 +78,7 @@ module.exports = {
 
             // Create a new batch
             winston.info('Trigger creation of new batch for user %s, tutor ID %s', req.user.id, dbTutorProfile.id);
-            model.batch.createBatch(tutorId, batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime, (err, batchId) => {
+            batchModel.createBatch(tutorId, batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime, (err, batchId) => {
                 if (err) throw err;
 
                 //Done!
@@ -98,7 +99,7 @@ module.exports = {
         var sMessage;
 
         winston.info('deleteBatch: Getting tutor profile for user %s', userId);
-        model.tutor.getTutorProfile(userId, (err, dbTutorProfile) => {
+        tutorModel.getTutorProfile(userId, (err, dbTutorProfile) => {
             if (err) throw err;
 
             // Does the user have a tutor profile?
@@ -111,7 +112,7 @@ module.exports = {
 
             // Make sure the batch we're trying to delete belongs to this tutor
             winston.info('deleteBatch: Got %s. Trying to get batch owner for %s', dbTutorProfile.id, batchId);
-            model.batch.getBatchOwner(batchId, (err, dbBatchOwner) => {
+            batchModel.getBatchOwner(batchId, (err, dbBatchOwner) => {
                 if (err) throw err;
 
                 // Does this batch exist?
@@ -137,7 +138,7 @@ module.exports = {
                 }
 
                 winston.info('Done with all validations. Deleting batch %s', batchId);
-                model.batch.deleteBatch(batchId, (err) => {
+                batchModel.deleteBatch(batchId, (err) => {
                     if (err) throw err;
 
                     //Done!

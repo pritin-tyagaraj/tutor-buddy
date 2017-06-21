@@ -1,0 +1,1 @@
+const student = require('../../../api/v1/student');

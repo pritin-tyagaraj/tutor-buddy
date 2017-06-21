@@ -1,5 +1,6 @@
 'use strict';
-const model = require(`./model-cloudsql`);
+const batchModel = require('./model/batch');
+const studentModel = require('./model/student');
 const winston = require('winston');
 const user = require('./user')
 
@@ -17,7 +18,7 @@ module.exports = {
         var studentEmail = req.body.email;
 
         // Is the user allowed to add students to this batch?
-        model.batch.getBatchOwner(batchId, function(err, owner) {
+        batchModel.getBatchOwner(batchId, function(err, owner) {
             if (err) {
                 winston.error('An error occurred in getBatchOwner', {
                     err: err
@@ -27,7 +28,7 @@ module.exports = {
 
             if (owner === userId) {
                 winston.info('User %s is allowed to add students to batch %s. Proceeding...', userId, batchId);
-                model.student.addStudentToBatch(batchId, studentFirstName, studentLastName, studentPhone, studentEmail, (err, studentId) => {
+                studentModel.addStudentToBatch(batchId, studentFirstName, studentLastName, studentPhone, studentEmail, (err, studentId) => {
                     if (err) {
                         winston.error('An error occurred in addStudentToBatch', {
                             err: err
@@ -60,7 +61,7 @@ module.exports = {
         var studentId = req.params.studentId;
 
         //Is the user allowed to remove a student from a batch
-        model.batch.getBatchOwner(batchId, function(err, owner) {
+        batchModel.getBatchOwner(batchId, function(err, owner) {
             if (err) {
                 winston.error('An error occurred in removeStudentFromBatch', {
                     err: err
@@ -70,7 +71,7 @@ module.exports = {
 
             if (owner === userId) {
                 winston.info('User %s is allowed to remove students from batch %s. Proceeding...', userId, batchId);
-                model.student.removeStudentFromBatch(batchId, studentId, (err) => {
+                studentModel.removeStudentFromBatch(batchId, studentId, (err) => {
                     if (err) {
                         winston.error('An error occurred in removeStudentFromBatch', {
                             err: err
@@ -96,7 +97,7 @@ module.exports = {
         var batchId = req.params.batchId;
 
         //Is the user allowed to view the list of students for this batch?
-        model.batch.getBatchOwner(batchId,
+        batchModel.getBatchOwner(batchId,
             function(err, owner) {
                 if (err) {
                     winston.error('An error occurred in getStudentsForBatch', {
@@ -107,7 +108,7 @@ module.exports = {
 
                 if (owner === userId) {
                     winston.info('User %s is allowed to view the students in batch %s. Proceeding...', userId, batchId);
-                    model.student.getStudentsInBatch(batchId, (err, results) => {
+                    studentModel.getStudentsInBatch(batchId, (err, results) => {
                         if (err) {
                             winston.error('An error occurred in getStudentsForBatch', {
                                 err: err
