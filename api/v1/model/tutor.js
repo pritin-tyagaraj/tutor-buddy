@@ -3,7 +3,7 @@ const winston = require('winston');
 
 module.exports = {
     getTutorProfile: function (userId, cb) {
-        util.executeQuery('SELECT t.* FROM (SELECT * FROM ' + Table.TUTORS + ') AS t INNER JOIN (SELECT * FROM ' + Table.USERS + ' WHERE id = ?) AS u WHERE t.id = u.tutor_profile_id', [userId], cb, (results) => {
+        util.executeQuery('SELECT t.* FROM (SELECT * FROM ' + util.Table.TUTORS + ') AS t INNER JOIN (SELECT * FROM ' + util.Table.USERS + ' WHERE id = ?) AS u WHERE t.id = u.tutor_profile_id', [userId], cb, (results) => {
             cb(null, results[0]);
         });
     },
@@ -22,7 +22,7 @@ module.exports = {
             }
 
             // Create a new tutor profile
-            connection.query('INSERT INTO ' + Table.TUTORS + ' VALUES()', (err, result) => {
+            connection.query('INSERT INTO ' + util.Table.TUTORS + ' VALUES()', (err, result) => {
                 if (err) {
                     connection.rollback(() => {
                         winston.error('model: Error while inserting into tutors for creating a new tutor profile');
@@ -32,7 +32,7 @@ module.exports = {
 
                 // Map the created tutor profile with the current user
                 var createdTutorProfile = result.insertId;
-                connection.query('UPDATE ' + Table.USERS + ' SET `tutor_profile_id` = ? WHERE `id` = ?', [createdTutorProfile, userId], (err, result) => {
+                connection.query('UPDATE ' + util.Table.USERS + ' SET `tutor_profile_id` = ? WHERE `id` = ?', [createdTutorProfile, userId], (err, result) => {
                     if (err) {
                         connection.rollback(() => {
                             winston.error('model: Error while mapping created tutor profile ID %s to user %s', createdTutorProfile, userId);

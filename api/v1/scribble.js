@@ -1,5 +1,6 @@
 'use strict';
-const model = require(`./model-cloudsql`);
+const batchModel = require(`./model/batch`);
+const scribbleModel = require('./model/scribble');
 const winston = require('winston');
 
 module.exports = {
@@ -8,7 +9,7 @@ module.exports = {
         var batchId = req.params.batchId;
 
         // Is the user allowed to read scribbles for this batch?
-        model.batch.getBatchOwner(batchId, function(err, owner) {
+        batchModel.getBatchOwner(batchId, function(err, owner) {
             if (err) {
                 winston.error('An error occurred in getBatchOwner in getScribbleForBatch', {
                     err: err
@@ -18,7 +19,7 @@ module.exports = {
 
             // Did we find an owner for the specified batch?
             if (!owner) {
-                res.json(400, {
+                return res.json(400, {
                     message: 'Are you sure batch ID ' + batchId + ' exists?'
                 });
             }
@@ -33,11 +34,12 @@ module.exports = {
             }
 
             // Validation done
-            model.scribble.getScribbleForBatch(batchId, (err, result) => {
+            scribbleModel.getScribbleForBatch(batchId, (err, result) => {
                 if (err) {
                     winston.error('An error occurred in getScribbleForBatch', {
                         err: err
                     });
+                    return res.json(500);
                 }
 
                 // Done!
@@ -55,7 +57,7 @@ module.exports = {
         var scribbleContent = req.body.content;
 
         // Is the user allowed to read scribbles for this batch?
-        model.batch.getBatchOwner(batchId, function(err, owner) {
+        batchModel.getBatchOwner(batchId, function(err, owner) {
             if (err) {
                 winston.error('An error occurred in getBatchOwner in updateScribbleForBatch', {
                     err: err
@@ -80,11 +82,12 @@ module.exports = {
             }
 
             // Validation done
-            model.scribble.updateScribbleForBatch(batchId, scribbleContent, (err, result) => {
+            scribbleModel.updateScribbleForBatch(batchId, scribbleContent, (err, result) => {
                 if (err) {
                     winston.error('An error occurred in updateScribbleForBatch', {
                         err: err
                     });
+                    return res.json(500);
                 }
 
                 // Done!

@@ -5,97 +5,6 @@ const mysql = require('mysql');
 const winston = require('winston');
 
 /**
- * Returns the existing batches for the provided user.
- */
-function getBatchesForTutor(tutorId, cb) {
-    executeQuery('SELECT b.* FROM (SELECT * FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE tutor_id = ?) AS a INNER JOIN (SELECT * FROM ' + Table.BATCHES + ') AS b WHERE a.batch_id = b.id', [tutorId], cb, (results) => {
-        cb(null, results);
-    });
-}
-
-/**
- * Create a new batch for a tutor and maps it to the tutor
- */
-function createBatch(tutorId, batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime, cb) {
-    const connection = getConnection();
-    connection.beginTransaction(function(err) {
-        if (err) {
-            winston.error('model: Error while starting transaction for createBatch', {
-                err: err
-            });
-            return cb(err);
-        }
-
-        // Create a new batch
-        connection.query('INSERT INTO ' + Table.BATCHES + ' (`name`, `subject`, `address_text`, `recur_days`, `recur_start`, `recur_end`, `start_time`, `end_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [batchName, batchSubject, batchAddressText, batchRecurrenceDays, batchRecurrenceStart, batchRecurrenceEnd, batchStartTime, batchEndTime], (err, result) => {
-            if (err) return cb(err);
-
-            // Map this batch to the tutor
-            var batchId = result.insertId;
-            connection.query('INSERT INTO ' + Table.TUTOR_BATCH_MAP + ' (`tutor_id`, `batch_id`) VALUES (?, ?)', [tutorId, batchId], (err) => {
-                if (err) return cb(err);
-
-                // Create an empty entry in the scribbles table
-                connection.query('INSERT INTO ' + Table.SCRIBBLES + ' (`batch_id`) VALUES (?)', [batchId], (err) => {
-                    if (err) return cb(err);
-
-                    // OK done!
-                    connection.commit((err) => {
-                        if (err) {
-                            connection.rollback(() => {
-                                winston.error('model: Error while committing transaction in createBatch');
-                                throw err;
-                            })
-                        }
-
-                        connection.end();
-                        cb(null, batchId);
-                    });
-                });
-            });
-        });
-    });
-}
-
-/**
- * Gets the tutor ID of the owner of the provided batch
- */
-function getBatchOwner(batchId, cb) {
-    executeQuery('SELECT `tutor_id` FROM ' + Table.TUTOR_BATCH_MAP + ' WHERE `batch_id` = ?', [batchId], cb, (result) => {
-        if (result.length == 0) {
-            winston.info('model: Found no owner for batch %s', batchId);
-            cb(null, "");
-        } else if (result.length > 1) {
-            winston.error('model: Found multiple owners for batch %s', batchId);
-            cb(null, null);
-        } else {
-            var tutorId = result[0].tutor_id;
-            winston.info('model: Found tutorId %s for batch %s', tutorId, batchId);
-            cb(null, tutorId);
-        }
-    });
-}
-
-/**
- * Deletes the provided batch. Update both the 'batches' table and the 'tutor-batch-map' table
- */
-function deleteBatch(batchId, cb) {
-    executeQuery('CALL `tutor-buddy`.' + StoredProcedure.deleteBatch + '(?)', [batchId], cb, () => {
-        cb();
-    });
-}
-
-/**
- * Checks if the given student belongs to the given batch. If yes, calls the success callback with the result as 'true'
- */
-function hasStudent(batchId, studentId, cb) {
-    executeQuery('SELECT COUNT(*) FROM ' + Table.BATCH_STUDENT_MAP + ' WHERE `batch_id` = ? AND `student_id` = ?', [batchId, studentId], cb, (result) => {
-        var value = (result[0]['COUNT(*)'] === 0) ? false : true;
-        cb(null, value);
-    });
-}
-
-/**
  * Adds a student to a batch (with verified=false) and sends out an email to the student for verification. Also updates the student-batch mapping table
  */
 function addStudentToBatch(batchId, firstName, lastName, phone, email, cb) {
@@ -178,31 +87,7 @@ function deletePayment(paymentId, cb) {
     });
 }
 
-function updateScribbleForBatch(batchId, scribbleContent, cb) {
-    executeQuery('UPDATE ' + Table.SCRIBBLES + ' SET `content` = ? WHERE `batch_id` = ?', [scribbleContent, batchId], cb, () => {
-        cb();
-    });
-}
-
-function getScribbleForBatch(batchId, cb) {
-    executeQuery('SELECT `content` FROM ' + Table.SCRIBBLES + ' WHERE `batch_id` = ?', [batchId], cb, (result) => {
-        var content = result[0].content;
-        if(!content) {
-            content = "";
-        }
-
-        cb(null, content);
-    });
-}
-
 module.exports = {
-    batch: {
-        getBatchesForTutor: getBatchesForTutor,
-        createBatch: createBatch,
-        getBatchOwner: getBatchOwner,
-        deleteBatch: deleteBatch,
-        hasStudent: hasStudent
-    },
     student: {
         addStudentToBatch: addStudentToBatch,
         getStudentsInBatch: getStudentsInBatch,
@@ -213,9 +98,5 @@ module.exports = {
         getPaymentsForBatch: getPaymentsForBatch,
         getPaymentOwner: getPaymentOwner,
         deletePayment: deletePayment
-    },
-    scribble: {
-        updateScribbleForBatch: updateScribbleForBatch,
-        getScribbleForBatch: getScribbleForBatch,
     }
 };
