@@ -1,7 +1,5 @@
 'use strict';
 
-const model = require('./model-cloudsql');
-
 module.exports = {
     getCurrentUserTutorProfile: function(req, res, next) {
 

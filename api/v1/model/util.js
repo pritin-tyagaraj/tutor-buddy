@@ -39,7 +39,7 @@ module.exports = {
      * Helper function to execute SQL queries and do common error handling
      */
     executeQuery: function(queryString, queryParams, errorCb, successCb) {
-        const connection = getConnection();
+        const connection = this.getConnection();
         return connection.query(queryString, queryParams, (err, results) => {
             if (err) {
                 winston.error('model: Error while executing query', {
