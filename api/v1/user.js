@@ -2,7 +2,8 @@
 const https = require('https');
 const util = require('util');
 const winston = require('winston');
-const model = require(`./model-cloudsql`);
+const tutorModel = require(`./model/tutor`);
+const userModel = require('./model/user');
 const session = require('../auth/session');
 
 /**
@@ -25,7 +26,7 @@ function createNewFacebookUser(facebook_id, access_token, cb) {
 
             // Write to DB and call cb!
             winston.info('Creating new user entry for FB user %s (%s %s)', facebook_id, firstName, lastName)
-            model.user.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
+            userModel.createNewUser(firstName, lastName, email, facebook_id, access_token, cb);
         });
     });
 }
@@ -35,7 +36,7 @@ module.exports = {
      * Returns details of the currently logged in user
      */
     getCurrentUser: function(req, res, next) {
-        model.user.getUserProfile(req.user.id, (err, result) => {
+        userModel.getUserProfile(req.user.id, (err, result) => {
             if (err) {
                 throw err;
             }
@@ -48,7 +49,7 @@ module.exports = {
      */
     createTutorProfile: function(req, res, next) {
         // Does the user already have a tutor profile? If yes, we can't create another.
-        model.user.isUserTutor(req.user.id, (err, tutorProfileExists) => {
+        userModel.isUserTutor(req.user.id, (err, tutorProfileExists) => {
             if (err) {
                 throw err;
             }
@@ -60,7 +61,7 @@ module.exports = {
                 });
             } else {
                 // Create a new tutor profile and map the created ID in the users table. Return the created tutor ID
-                model.tutor.createTutorProfile(req.user.id, (err, tutorId) => {
+                tutorModel.createTutorProfile(req.user.id, (err, tutorId) => {
                     if (err) {
                         winston.error('createTutorProfile failed');
                         return next(err);
@@ -80,18 +81,18 @@ module.exports = {
      */
     getTutorProfile: function(req, res, next) {
         //Is the user even a tutor?
-        model.user.isUserTutor(req.user.id, (err, isTutor) => {
+        userModel.isUserTutor(req.user.id, (err, isTutor) => {
             if (err) throw err;
             if (!isTutor) {
                 winston.error('getTutorProfile called for user who isn\'t a tutor');
-                res.json(404, {
+                return res.json(404, {
                     message: 'The user doesn\'t have an associated tutor profile'
                 });
             }
 
             //Get the tutor profile
             winston.info('User is a tutor. Fetching tutor profile...');
-            model.tutor.getTutorProfile(req.user.id, (err, result) => {
+            tutorModel.getTutorProfile(req.user.id, (err, result) => {
                 if (err) {
                     winston.error('getTutorProfile failed');
                     return next(err);
@@ -108,21 +109,15 @@ module.exports = {
     loginOrCreateUser: function(facebook_id, access_token, res, next) {
         if (!facebook_id) {
             winston.error('Trying to loginOrCreate a user without an FB ID!');
+            return;
         }
 
         winston.info('Check if FB ID %s is returning or is new user', facebook_id);
-        model.user.readByFacebookId(facebook_id, (err, user) => {
+        userModel.readByFacebookId(facebook_id, (err, user) => {
             if (err && err.code === 404) {
                 // This Facebook ID isn't present in our database. Create a new user!
                 winston.info('User is a returning user. Creating new entry in user table');
                 createNewFacebookUser(facebook_id, access_token, function(err, dbUserId) {
-                    if (err) {
-                        winston.error('An error occurred while creating a new Facebook user in the users table', {
-                            error: err
-                        });
-                        return next(err);
-                    }
-
                     winston.debug('Created new account for FB user', {
                         facebook_id: facebook_id,
                         access_token: access_token
@@ -130,13 +125,6 @@ module.exports = {
 
                     //Create a new session for this newly created user
                     session.createNewServerSessionForUser(dbUserId, (err, sessionId) => {
-                        if (err) {
-                            winston.error('An error occurred while creating a new session for user ' + dbUserId, {
-                                error: err
-                            });
-                            return next(err);
-                        }
-
                         winston.debug('Created new server session for DB user', {
                             dbUserId: dbUserId,
                             sessionId: sessionId
@@ -153,12 +141,6 @@ module.exports = {
 
                 // User exists already. Create a new session
                 session.createNewServerSessionForUser(user.id, function(err, sessionId) {
-                    if (err) {
-                        winston.error('An error occurred while creating a new session for an existing user ' + user.id, {
-                            error: err
-                        });
-                    }
-
                     winston.debug('New server session created for existing FB user.', {
                         facebook_id: facebook_id,
                         sessionId: sessionId

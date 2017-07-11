@@ -5,6 +5,7 @@ var restify = require('restify');
 var plugins = require('restify-plugins');
 var winston = require('winston');
 var CookieParser = require('restify-cookies');
+var validateRequest = require('./api/middleware/validateRequest');
 
 // Set up the server
 const server = restify.createServer({
@@ -47,7 +48,7 @@ winston.add(winston.transports.Console, {
 });
 
 // Wire in the auth middleware
-server.use(require('./api/middleware/validateRequest').checkUserAuthentication);
+server.use(validateRequest.checkUserAuthentication);
 winston.info('Wiring request validation middleware... Done.');
 
 // End requests that we don't know how to handle.

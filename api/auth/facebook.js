@@ -54,7 +54,6 @@ module.exports = {
             httpRes.on('end', () => {
                 //We've just now finished receiving the access_token!
                 var accessToken = JSON.parse(body).access_token;
-                console.error(JSON.parse(body));
 
                 //Verify the received access_token (and also get the user's ID).
                 winston.info('Verifying received access token %s', accessToken);

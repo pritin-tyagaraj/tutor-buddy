@@ -1,0 +1,1 @@
+const userModel = require('../../../api/v1/model/user');

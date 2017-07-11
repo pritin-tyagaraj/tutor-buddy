@@ -8,7 +8,7 @@
         "start": "node app.js",
         "monitor": "nodemon app.js",
         "deploy": "gcloud app deploy app.yaml",
-        "test": "cross-env mode=TEST&& istanbul cover node_modules/mocha/bin/_mocha -- --delay && codecov",
+        "test": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec&& codecov",
         "init-cloudsql": "node books/model-cloudsql.js"
     },
     "author": "Pritin Tyagaraj",
@@ -39,6 +39,7 @@
         "mongodb": "^2.2.5",
         "mysql": "^2.11.1",
         "nconf": "^0.8.4",
+        "nock": "^9.0.13",
         "node-promise": "^0.5.12",
         "prompt": "^1.0.0",
         "restify": "^4.3.0",
@@ -55,7 +56,7 @@
         "nodejs-repo-tools": "git+https://git@github.com/GoogleCloudPlatform/nodejs-repo-tools.git",
         "proxyquire": "^1.7.10",
         "should": "^11.2.0",
-        "sinon": "^1.17.7",
+        "sinon": "^2.1.0",
         "supertest": "^3.0.0"
     },
     "engines": {
